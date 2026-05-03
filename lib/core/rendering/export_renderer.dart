@@ -10,6 +10,7 @@ import '../models/exif_data.dart';
 import '../models/export_settings.dart';
 import '../models/frame_config.dart';
 import '../models/frame_style.dart';
+import 'brand_logo_loader.dart';
 import 'frame_painter_factory.dart';
 import 'watermark_painter.dart';
 
@@ -38,13 +39,23 @@ abstract final class ExportRenderer {
     final ui.Image? watermark =
         isPro ? null : await WatermarkLoader.load();
 
-    // 3. Create painter at full resolution.
+    // 3. Load camera logo if enabled.
+    final ui.Image? cameraLogo =
+        config.showCameraLogo
+            ? await BrandLogoLoader.load(
+                exif.cameraMake,
+                size: 256,
+              )
+            : null;
+
+    // 4. Create painter at full resolution.
     final painter = FramePainterFactory.create(
       styleId: styleId,
       image: fullImage,
       exif: exif,
       config: config,
       watermark: watermark,
+      cameraLogo: cameraLogo,
     );
 
     final totalSize = painter.calculateTotalSize(
@@ -54,19 +65,19 @@ abstract final class ExportRenderer {
       ),
     );
 
-    // 4. Record to picture.
+    // 5. Record to picture.
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     painter.paint(canvas, totalSize);
     final picture = recorder.endRecording();
 
-    // 5. Rasterize.
+    // 6. Rasterize.
     final outputImage = await picture.toImage(
       totalSize.width.toInt(),
       totalSize.height.toInt(),
     );
 
-    // 6. Encode.
+    // 7. Encode.
     if (settings.format == ExportFormat.png) {
       final byteData = await outputImage.toByteData(
         format: ui.ImageByteFormat.png,

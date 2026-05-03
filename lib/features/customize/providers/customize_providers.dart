@@ -89,29 +89,20 @@ class FrameConfigNotifier extends _$FrameConfigNotifier {
     state = state.copyWith(showLocation: show);
   }
 
+  /// Only primary fields (camera, lens, dateTime,
+  /// location) are user-toggleable. Secondary fields
+  /// are always enabled and curated by each frame
+  /// style's painter.
   void toggleField(String field, bool visible) {
     final current = state.visibleFields;
     final updated = switch (field) {
       'camera' =>
         current.copyWith(camera: visible),
       'lens' => current.copyWith(lens: visible),
-      'aperture' =>
-        current.copyWith(aperture: visible),
-      'shutterSpeed' =>
-        current.copyWith(shutterSpeed: visible),
-      'iso' => current.copyWith(iso: visible),
-      'focalLength' =>
-        current.copyWith(focalLength: visible),
-      'exposureComp' =>
-        current.copyWith(exposureComp: visible),
-      'whiteBalance' =>
-        current.copyWith(whiteBalance: visible),
       'dateTime' =>
         current.copyWith(dateTime: visible),
       'location' =>
         current.copyWith(location: visible),
-      'dimensions' =>
-        current.copyWith(dimensions: visible),
       _ => current,
     };
     state = state.copyWith(visibleFields: updated);

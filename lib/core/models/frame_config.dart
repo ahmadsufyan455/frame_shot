@@ -17,17 +17,20 @@ enum FrameFontFamily {
 
 class ExifFieldVisibility {
   const ExifFieldVisibility({
+    // Primary fields — user-controlled toggles.
     this.camera = true,
     this.lens = true,
+    this.dateTime = true,
+    this.location = false,
+    // Secondary fields — always enabled; each frame
+    // style decides which to render in its layout.
     this.aperture = true,
     this.shutterSpeed = true,
     this.iso = true,
     this.focalLength = true,
-    this.exposureComp = false,
-    this.whiteBalance = false,
-    this.dateTime = true,
-    this.location = false,
-    this.dimensions = false,
+    this.exposureComp = true,
+    this.whiteBalance = true,
+    this.dimensions = true,
   });
 
   factory ExifFieldVisibility.fromMap(

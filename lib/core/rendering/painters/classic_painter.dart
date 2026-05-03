@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/rendering.dart';
 
 import '../frame_painter.dart';
@@ -10,15 +8,19 @@ class ClassicPainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
-  double get _padding => imageSize.width * frameWeightMultiplier;
+  double get _padding =>
+      imageSize.width * frameWeightMultiplier;
 
-  double get _infoPanelHeight => imageSize.width * 0.08;
+  double get _infoPanelHeight =>
+      imageSize.width * 0.08;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * frameWeightMultiplier;
+    final padding =
+        imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.08;
     return Size(
       imageSize.width + (padding * 2),
@@ -47,8 +49,11 @@ class ClassicPainter extends FramePainter {
       Paint()..color = config.backgroundColor,
     );
 
-    final separatorColor =
-        ui.Color.lerp(config.accentColor, config.backgroundColor, 0.5) ??
+    final separatorColor = Color.lerp(
+          config.accentColor,
+          config.backgroundColor,
+          0.5,
+        ) ??
         config.accentColor;
 
     canvas.drawLine(
@@ -67,50 +72,77 @@ class ClassicPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
-    final camera = _findValue(fields, 'Camera');
-    final settings = [
-      _findValue(fields, 'Aperture'),
-      _findValue(fields, 'Shutter'),
-      _findValue(fields, 'ISO'),
-      _findValue(fields, 'Focal Length'),
-    ].where((v) => v.isNotEmpty).join(' | ');
-    final date = _findValue(fields, 'Date');
+    if (fields.isEmpty) return;
 
     final bodySize = imageSize.width * 0.015;
-    final dateSize = imageSize.width * 0.012;
     final inset = imageSize.width * 0.015;
+    final logoHeight = _infoPanelHeight * 0.5;
 
-    final cameraTp = buildTextPainter(
-      camera,
-      fontSize: bodySize,
-      color: config.textColor,
-      fontWeight: FontWeight.w600,
-      maxWidth: panelRect.width * 0.45,
-    );
-    cameraTp.paint(
-      canvas,
-      Offset(
-        panelRect.left + inset,
-        panelRect.top + (panelRect.height - cameraTp.height) / 2,
-      ),
-    );
+    // -- Left side: camera logo + camera name --
+    var leftX = panelRect.left + inset;
+    final centerY =
+        panelRect.top + (panelRect.height / 2);
 
-    final settingsTp = buildTextPainter(
-      settings,
-      fontSize: bodySize,
-      color: config.textColor,
-      textAlign: TextAlign.right,
-      maxWidth: panelRect.width * 0.48,
+    // Paint camera logo if enabled.
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
     );
-    settingsTp.paint(
-      canvas,
-      Offset(
-        panelRect.right - inset - settingsTp.width,
-        panelRect.top + (panelRect.height - settingsTp.height) / 2,
-      ),
-    );
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(
+          leftX,
+          centerY - (logoHeight / 2),
+        ),
+        maxHeight: logoHeight,
+        tintColor: config.textColor,
+      );
+      leftX += logoW + (inset * 0.5);
+    }
 
+    // Camera name on the left.
+    final camera = _findValue(fields, 'Camera');
+    if (camera.isNotEmpty) {
+      final cameraTp = buildTextPainter(
+        camera,
+        fontSize: bodySize,
+        color: config.textColor,
+        fontWeight: FontWeight.w600,
+        maxWidth: panelRect.width * 0.4,
+      );
+      cameraTp.paint(
+        canvas,
+        Offset(leftX, centerY - (cameraTp.height / 2)),
+      );
+    }
+
+    // -- Right side: all settings joined by pipe --
+    final settingLabels = fields
+        .where((f) => f.$1 != 'Camera' && f.$1 != 'Date')
+        .map((f) => f.$2);
+    final settings = settingLabels.join(' | ');
+
+    if (settings.isNotEmpty) {
+      final settingsTp = buildTextPainter(
+        settings,
+        fontSize: bodySize,
+        color: config.textColor,
+        textAlign: TextAlign.right,
+        maxWidth: panelRect.width * 0.55,
+      );
+      settingsTp.paint(
+        canvas,
+        Offset(
+          panelRect.right - inset - settingsTp.width,
+          centerY - (settingsTp.height / 2),
+        ),
+      );
+    }
+
+    // -- Date below settings on the right --
+    final date = _findValue(fields, 'Date');
     if (date.isEmpty) return;
+    final dateSize = imageSize.width * 0.012;
     final dateTp = buildTextPainter(
       date,
       fontSize: dateSize,
@@ -122,16 +154,19 @@ class ClassicPainter extends FramePainter {
       canvas,
       Offset(
         panelRect.right - inset - dateTp.width,
-        panelRect.bottom - dateTp.height - (inset * 0.2),
+        panelRect.bottom -
+            dateTp.height -
+            (inset * 0.2),
       ),
     );
   }
 
-  String _findValue(List<(String, String)> fields, String label) {
+  String _findValue(
+    List<(String, String)> fields,
+    String label,
+  ) {
     for (final entry in fields) {
-      if (entry.$1 == label) {
-        return entry.$2;
-      }
+      if (entry.$1 == label) return entry.$2;
     }
     return '';
   }

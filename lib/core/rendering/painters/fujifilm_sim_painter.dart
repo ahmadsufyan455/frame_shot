@@ -10,15 +10,18 @@ class FujifilmSimPainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
-  double get _padding => imageSize.width * frameWeightMultiplier;
+  double get _padding =>
+      imageSize.width * frameWeightMultiplier;
 
   double get _panelHeight => imageSize.width * 0.2;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * frameWeightMultiplier;
+    final padding =
+        imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.2;
     return Size(
       imageSize.width + (padding * 2),
@@ -42,14 +45,16 @@ class FujifilmSimPainter extends FramePainter {
       _panelHeight,
     );
 
-    final cream =
-        ui.Color.lerp(
+    final cream = ui.Color.lerp(
           config.backgroundColor,
           const ui.Color(0xFFF7F2E9),
           0.8,
         ) ??
         config.backgroundColor;
-    canvas.drawRect(Offset.zero & totalSize, Paint()..color = cream);
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = cream,
+    );
 
     paintPhoto(canvas, photoRect);
 
@@ -58,7 +63,12 @@ class FujifilmSimPainter extends FramePainter {
       Radius.circular(imageSize.width * 0.01),
     );
     final panelColor =
-        ui.Color.lerp(cream, const ui.Color(0xFFDAF1EC), 0.28) ?? cream;
+        ui.Color.lerp(
+          cream,
+          const ui.Color(0xFFDAF1EC),
+          0.28,
+        ) ??
+        cream;
     canvas.drawRRect(card, Paint()..color = panelColor);
 
     paintInfoPanel(canvas, panelRect);
@@ -68,26 +78,38 @@ class FujifilmSimPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
-    final labels = {
-      'Camera': _findValue(fields, 'Camera'),
-      'Lens': _findValue(fields, 'Lens'),
-      'Aperture': _findValue(fields, 'Aperture'),
-      'Shutter': _findValue(fields, 'Shutter'),
-      'ISO': _findValue(fields, 'ISO'),
-      'Focal': _findValue(fields, 'Focal Length'),
-      'Date': _findValue(fields, 'Date'),
-    };
+    if (fields.isEmpty) return;
 
     final insetX = imageSize.width * 0.022;
     final insetY = imageSize.width * 0.015;
     final textSize = imageSize.width * 0.0135;
     final lineHeight = textSize * 1.4;
-    var row = 0;
 
-    for (final item in labels.entries) {
-      if (item.value.isEmpty) continue;
-      final leader = _leaderDots(item.key, item.value, 30);
-      final line = '${item.key}$leader${item.value}';
+    // Camera logo at top-right of panel.
+    final logoHeight = textSize * 2;
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
+    );
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(
+          panelRect.right - insetX - logoW,
+          panelRect.top + insetY,
+        ),
+        maxHeight: logoHeight,
+        tintColor: config.textColor,
+      );
+    }
+
+    var row = 0;
+    for (final field in fields) {
+      final leader = _leaderDots(
+        field.$1,
+        field.$2,
+        30,
+      );
+      final line = '${field.$1}$leader${field.$2}';
       final tp = buildTextPainter(
         line,
         fontSize: textSize,
@@ -102,25 +124,22 @@ class FujifilmSimPainter extends FramePainter {
         ),
       );
       row++;
-      if (panelRect.top + insetY + (row * lineHeight) >
+      if (panelRect.top +
+              insetY +
+              (row * lineHeight) >
           panelRect.bottom - textSize) {
         break;
       }
     }
   }
 
-  String _leaderDots(String left, String right, int width) {
+  String _leaderDots(
+    String left,
+    String right,
+    int width,
+  ) {
     final dots = width - left.length - right.length;
     if (dots <= 2) return '  ';
     return ' ${'.' * dots} ';
-  }
-
-  String _findValue(List<(String, String)> fields, String label) {
-    for (final entry in fields) {
-      if (entry.$1 == label) {
-        return entry.$2;
-      }
-    }
-    return '';
   }
 }

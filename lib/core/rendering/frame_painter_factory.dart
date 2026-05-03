@@ -18,6 +18,7 @@ abstract final class FramePainterFactory {
     required ExifData exif,
     required FrameConfig config,
     ui.Image? watermark,
+    ui.Image? cameraLogo,
   }) {
     return switch (styleId) {
       FrameStyleId.classic => ClassicPainter(
@@ -25,18 +26,21 @@ abstract final class FramePainterFactory {
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
       FrameStyleId.darkroom => DarkroomPainter(
           image: image,
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
       FrameStyleId.filmBorder => FilmBorderPainter(
           image: image,
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
       FrameStyleId.minimalLine =>
         MinimalLinePainter(
@@ -44,6 +48,7 @@ abstract final class FramePainterFactory {
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
       FrameStyleId.fujifilmSim =>
         FujifilmSimPainter(
@@ -51,12 +56,14 @@ abstract final class FramePainterFactory {
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
       FrameStyleId.architect => ArchitectPainter(
           image: image,
           exif: exif,
           config: config,
           watermark: watermark,
+          cameraLogo: cameraLogo,
         ),
     };
   }

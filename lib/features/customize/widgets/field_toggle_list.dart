@@ -7,18 +7,15 @@ import '../providers/customize_providers.dart';
 class FieldToggleList extends ConsumerWidget {
   const FieldToggleList({super.key});
 
+  /// Primary fields the user can toggle on/off.
+  /// Secondary fields (aperture, shutter, ISO, etc.)
+  /// are always enabled and curated by each frame
+  /// style.
   static const _fields = [
     ('camera', 'Camera'),
     ('lens', 'Lens'),
-    ('aperture', 'Aperture'),
-    ('shutterSpeed', 'Shutter Speed'),
-    ('iso', 'ISO'),
-    ('focalLength', 'Focal Length'),
-    ('exposureComp', 'Exposure Comp'),
-    ('whiteBalance', 'White Balance'),
     ('dateTime', 'Date & Time'),
     ('location', 'Location'),
-    ('dimensions', 'Dimensions'),
   ];
 
   @override
@@ -56,15 +53,8 @@ class FieldToggleList extends ConsumerWidget {
     return switch (key) {
       'camera' => v.camera,
       'lens' => v.lens,
-      'aperture' => v.aperture,
-      'shutterSpeed' => v.shutterSpeed,
-      'iso' => v.iso,
-      'focalLength' => v.focalLength,
-      'exposureComp' => v.exposureComp,
-      'whiteBalance' => v.whiteBalance,
       'dateTime' => v.dateTime,
       'location' => v.location,
-      'dimensions' => v.dimensions,
       _ => false,
     };
   }

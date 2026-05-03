@@ -63,7 +63,7 @@ class CustomizeSheet extends StatelessWidget {
             _SectionHeader(title: 'Display'),
             LogoToggle(),
             SizedBox(height: 20),
-            _SectionHeader(title: 'Visible Fields'),
+            _SectionHeader(title: 'Show / Hide'),
             FieldToggleList(),
             SizedBox(height: 20),
             _SectionHeader(title: 'Override Values'),

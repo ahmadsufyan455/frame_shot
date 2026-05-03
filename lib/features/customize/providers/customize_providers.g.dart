@@ -93,7 +93,7 @@ final class FrameConfigNotifierProvider
 }
 
 String _$frameConfigNotifierHash() =>
-    r'91b68e118fadf08424e8ca3984058fb628a524ae';
+    r'69b8b8e7bdae307e747353e647421bdb3f18b221';
 
 abstract class _$FrameConfigNotifier extends $Notifier<FrameConfig> {
   FrameConfig build();

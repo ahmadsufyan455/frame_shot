@@ -10,10 +10,12 @@ class MinimalLinePainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
   double get _padding {
-    final scaled = imageSize.width * frameWeightMultiplier * 0.4;
+    final scaled =
+        imageSize.width * frameWeightMultiplier * 0.4;
     final min = imageSize.width * 0.015;
     return scaled < min ? min : scaled;
   }
@@ -22,7 +24,8 @@ class MinimalLinePainter extends FramePainter {
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final scaled = imageSize.width * frameWeightMultiplier * 0.4;
+    final scaled =
+        imageSize.width * frameWeightMultiplier * 0.4;
     final min = imageSize.width * 0.015;
     final padding = scaled < min ? min : scaled;
     final panelHeight = imageSize.width * 0.06;
@@ -58,8 +61,11 @@ class MinimalLinePainter extends FramePainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
-        ..color =
-            ui.Color.lerp(config.accentColor, config.backgroundColor, 0.1) ??
+        ..color = ui.Color.lerp(
+              config.accentColor,
+              config.backgroundColor,
+              0.1,
+            ) ??
             config.accentColor,
     );
 
@@ -71,12 +77,12 @@ class MinimalLinePainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
-    final line = [
-      _findValue(fields, 'Aperture'),
-      _findValue(fields, 'Shutter'),
-      _findValue(fields, 'ISO'),
-      _findValue(fields, 'Focal Length'),
-    ].where((v) => v.isNotEmpty).join(' · ');
+    if (fields.isEmpty) return;
+
+    // Join all visible field values with a dot
+    // separator.
+    final line =
+        fields.map((f) => f.$2).join(' \u00B7 ');
 
     final tp = buildTextPainter(
       line,
@@ -85,21 +91,37 @@ class MinimalLinePainter extends FramePainter {
       textAlign: TextAlign.center,
       maxWidth: panelRect.width,
     );
+
+    final centerY =
+        panelRect.top +
+        (panelRect.height - tp.height) / 2;
+
+    // Camera logo on the left if enabled.
+    final logoHeight = _panelHeight * 0.55;
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
+    );
+    final inset = imageSize.width * 0.015;
+
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(
+          panelRect.left + inset,
+          centerY,
+        ),
+        maxHeight: logoHeight,
+        tintColor: config.textColor,
+      );
+    }
+
     tp.paint(
       canvas,
       Offset(
-        panelRect.left + (panelRect.width - tp.width) / 2,
-        panelRect.top + (panelRect.height - tp.height) / 2,
+        panelRect.left +
+            (panelRect.width - tp.width) / 2,
+        centerY,
       ),
     );
-  }
-
-  String _findValue(List<(String, String)> fields, String label) {
-    for (final entry in fields) {
-      if (entry.$1 == label) {
-        return entry.$2;
-      }
-    }
-    return '';
   }
 }

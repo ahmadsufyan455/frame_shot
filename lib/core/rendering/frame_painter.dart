@@ -13,12 +13,14 @@ abstract class FramePainter extends CustomPainter {
     required this.exif,
     required this.config,
     this.watermark,
+    this.cameraLogo,
   });
 
   final ui.Image image;
   final ExifData exif;
   final FrameConfig config;
   final ui.Image? watermark;
+  final ui.Image? cameraLogo;
 
   Size calculateTotalSize(Size imageSize);
 
@@ -78,6 +80,8 @@ abstract class FramePainter extends CustomPainter {
         image.height.toDouble(),
       );
 
+  String get _fontFamily => config.fontFamily.name;
+
   TextPainter buildTextPainter(
     String text, {
     required double fontSize,
@@ -90,6 +94,7 @@ abstract class FramePainter extends CustomPainter {
       text: TextSpan(
         text: text,
         style: TextStyle(
+          fontFamily: _fontFamily,
           fontSize: fontSize,
           color: color,
           fontWeight: fontWeight,
@@ -99,6 +104,56 @@ abstract class FramePainter extends CustomPainter {
       textAlign: textAlign,
     )..layout(maxWidth: maxWidth ?? double.infinity);
     return tp;
+  }
+
+  /// Paints the camera brand logo at [offset] fitting
+  /// within [maxHeight]. No-op when logo is disabled or
+  /// unavailable.
+  void paintCameraLogo(
+    Canvas canvas, {
+    required Offset offset,
+    required double maxHeight,
+    required Color tintColor,
+  }) {
+    if (!config.showCameraLogo || cameraLogo == null) {
+      return;
+    }
+    final logo = cameraLogo!;
+    final scale = maxHeight / logo.height;
+    final destWidth = logo.width * scale;
+    final src = Rect.fromLTWH(
+      0,
+      0,
+      logo.width.toDouble(),
+      logo.height.toDouble(),
+    );
+    final dst = Rect.fromLTWH(
+      offset.dx,
+      offset.dy,
+      destWidth,
+      maxHeight,
+    );
+    canvas.drawImageRect(
+      logo,
+      src,
+      dst,
+      Paint()
+        ..filterQuality = FilterQuality.high
+        ..colorFilter = ColorFilter.mode(
+          tintColor,
+          BlendMode.srcIn,
+        ),
+    );
+  }
+
+  /// Returns the width the camera logo would occupy,
+  /// or 0 if disabled/unavailable.
+  double cameraLogoWidth({required double maxHeight}) {
+    if (!config.showCameraLogo || cameraLogo == null) {
+      return 0;
+    }
+    final scale = maxHeight / cameraLogo!.height;
+    return cameraLogo!.width * scale;
   }
 
   List<(String label, String value)> get visibleFields {

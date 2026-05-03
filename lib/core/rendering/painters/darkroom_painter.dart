@@ -10,6 +10,7 @@ class DarkroomPainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
   double get _padding => imageSize.width * frameWeightMultiplier * 1.2;
@@ -69,20 +70,44 @@ class DarkroomPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
+    if (fields.isEmpty) return;
+
     final textSize = imageSize.width * 0.014;
     final rowGap = textSize * 0.6;
     final inset = imageSize.width * 0.018;
-    final colWidth = (panelRect.width - (inset * 3)) / 2;
+    final colWidth =
+        (panelRect.width - (inset * 3)) / 2;
+
+    // Camera logo at top-right corner.
+    final logoHeight = textSize * 2.5;
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
+    );
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(
+          panelRect.right - inset - logoW,
+          panelRect.top + inset,
+        ),
+        maxHeight: logoHeight,
+        tintColor: config.textColor,
+      );
+    }
 
     var row = 0;
     for (var i = 0; i < fields.length; i++) {
       final col = i % 2;
-      if (col == 0 && i > 0) {
-        row++;
-      }
-      final x = panelRect.left + inset + (col * (colWidth + inset));
-      final y = panelRect.top + inset + (row * (textSize + rowGap));
-      final line = '${fields[i].$1.toUpperCase()}: ${fields[i].$2}';
+      if (col == 0 && i > 0) row++;
+      final x = panelRect.left +
+          inset +
+          (col * (colWidth + inset));
+      final y = panelRect.top +
+          inset +
+          (row * (textSize + rowGap));
+      final line =
+          '${fields[i].$1.toUpperCase()}: '
+          '${fields[i].$2}';
       final tp = buildTextPainter(
         line,
         fontSize: textSize,

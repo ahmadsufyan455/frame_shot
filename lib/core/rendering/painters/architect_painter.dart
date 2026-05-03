@@ -10,15 +10,18 @@ class ArchitectPainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
-  double get _padding => imageSize.width * frameWeightMultiplier;
+  double get _padding =>
+      imageSize.width * frameWeightMultiplier;
 
   double get _panelHeight => imageSize.width * 0.09;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * frameWeightMultiplier;
+    final padding =
+        imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.09;
     return Size(
       imageSize.width + (padding * 2),
@@ -42,14 +45,16 @@ class ArchitectPainter extends FramePainter {
       _panelHeight,
     );
 
-    final blueprint =
-        ui.Color.lerp(
+    final blueprint = ui.Color.lerp(
           config.backgroundColor,
           const ui.Color(0xFF0C1E3A),
           0.8,
         ) ??
         config.backgroundColor;
-    canvas.drawRect(Offset.zero & totalSize, Paint()..color = blueprint);
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = blueprint,
+    );
 
     paintPhoto(canvas, photoRect);
     _paintGridOverlay(canvas, photoRect);
@@ -61,54 +66,83 @@ class ArchitectPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
-    final bits = [
-      _findValue(fields, 'ISO').isEmpty
-          ? ''
-          : '[ISO ${_findValue(fields, 'ISO')}]',
-      _findValue(fields, 'Aperture').isEmpty
-          ? ''
-          : '[${_findValue(fields, 'Aperture')}]',
-      _findValue(fields, 'Shutter').isEmpty
-          ? ''
-          : '[${_findValue(fields, 'Shutter')}]',
-      _findValue(fields, 'Focal Length').isEmpty
-          ? ''
-          : '[${_findValue(fields, 'Focal Length')}]',
-    ].where((v) => v.isNotEmpty).join(' ');
+    if (fields.isEmpty) return;
 
-    final tp = buildTextPainter(
-      bits,
-      fontSize: imageSize.width * 0.014,
-      color: config.textColor,
-      maxWidth: panelRect.width - (imageSize.width * 0.03),
-    );
-    tp.paint(
-      canvas,
-      Offset(
-        panelRect.left + imageSize.width * 0.015,
-        panelRect.top + (panelRect.height - tp.height) / 2,
-      ),
-    );
+    final inset = imageSize.width * 0.015;
+    final centerY =
+        panelRect.top + (panelRect.height / 2);
 
-    final camera = _findValue(fields, 'Camera');
-    if (camera.isEmpty) return;
-    final cameraTp = buildTextPainter(
-      camera,
-      fontSize: imageSize.width * 0.012,
-      color: config.accentColor,
-      textAlign: TextAlign.right,
-      maxWidth: panelRect.width * 0.35,
+    // Camera logo on the far right.
+    final logoHeight = _panelHeight * 0.5;
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
     );
-    cameraTp.paint(
-      canvas,
-      Offset(
-        panelRect.right - cameraTp.width - (imageSize.width * 0.015),
-        panelRect.top + (panelRect.height - cameraTp.height) / 2,
-      ),
-    );
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(
+          panelRect.right - inset - logoW,
+          centerY - (logoHeight / 2),
+        ),
+        maxHeight: logoHeight,
+        tintColor: config.accentColor,
+      );
+    }
+
+    // Left side: all fields in bracketed format,
+    // excluding Camera (shown separately on right).
+    final camera = fields
+        .where((f) => f.$1 == 'Camera')
+        .map((f) => f.$2)
+        .firstOrNull;
+
+    final bits = fields
+        .where((f) => f.$1 != 'Camera')
+        .map((f) => '[${f.$2}]')
+        .join(' ');
+
+    if (bits.isNotEmpty) {
+      final tp = buildTextPainter(
+        bits,
+        fontSize: imageSize.width * 0.014,
+        color: config.textColor,
+        maxWidth: panelRect.width - (inset * 2),
+      );
+      tp.paint(
+        canvas,
+        Offset(
+          panelRect.left + inset,
+          centerY - (tp.height / 2),
+        ),
+      );
+    }
+
+    // Camera name on the right (before logo).
+    if (camera != null && camera.isNotEmpty) {
+      final rightEdge = logoW > 0
+          ? panelRect.right - inset - logoW - inset
+          : panelRect.right - inset;
+      final cameraTp = buildTextPainter(
+        camera,
+        fontSize: imageSize.width * 0.012,
+        color: config.accentColor,
+        textAlign: TextAlign.right,
+        maxWidth: panelRect.width * 0.35,
+      );
+      cameraTp.paint(
+        canvas,
+        Offset(
+          rightEdge - cameraTp.width,
+          centerY - (cameraTp.height / 2),
+        ),
+      );
+    }
   }
 
-  void _paintGridOverlay(Canvas canvas, Rect photoRect) {
+  void _paintGridOverlay(
+    Canvas canvas,
+    Rect photoRect,
+  ) {
     final paint = Paint()
       ..color = ui.Color.fromARGB(110, 255, 255, 255)
       ..strokeWidth = 1;
@@ -131,19 +165,53 @@ class ArchitectPainter extends FramePainter {
     }
   }
 
-  void _paintCornerCrosshair(Canvas canvas, Rect photoRect) {
+  void _paintCornerCrosshair(
+    Canvas canvas,
+    Rect photoRect,
+  ) {
     final len = imageSize.width * 0.02;
-    final markerColor =
-        ui.Color.lerp(config.accentColor, const ui.Color(0xFFFFFFFF), 0.2) ??
+    final markerColor = ui.Color.lerp(
+          config.accentColor,
+          const ui.Color(0xFFFFFFFF),
+          0.2,
+        ) ??
         config.accentColor;
     final paint = Paint()
       ..color = markerColor
       ..strokeWidth = 1.5;
 
-    _drawCorner(canvas, photoRect.topLeft, len, true, true, paint);
-    _drawCorner(canvas, photoRect.topRight, len, false, true, paint);
-    _drawCorner(canvas, photoRect.bottomLeft, len, true, false, paint);
-    _drawCorner(canvas, photoRect.bottomRight, len, false, false, paint);
+    _drawCorner(
+      canvas,
+      photoRect.topLeft,
+      len,
+      true,
+      true,
+      paint,
+    );
+    _drawCorner(
+      canvas,
+      photoRect.topRight,
+      len,
+      false,
+      true,
+      paint,
+    );
+    _drawCorner(
+      canvas,
+      photoRect.bottomLeft,
+      len,
+      true,
+      false,
+      paint,
+    );
+    _drawCorner(
+      canvas,
+      photoRect.bottomRight,
+      len,
+      false,
+      false,
+      paint,
+    );
   }
 
   void _drawCorner(
@@ -156,16 +224,15 @@ class ArchitectPainter extends FramePainter {
   ) {
     final xDir = left ? 1 : -1;
     final yDir = top ? 1 : -1;
-    canvas.drawLine(point, Offset(point.dx + (len * xDir), point.dy), paint);
-    canvas.drawLine(point, Offset(point.dx, point.dy + (len * yDir)), paint);
-  }
-
-  String _findValue(List<(String, String)> fields, String label) {
-    for (final entry in fields) {
-      if (entry.$1 == label) {
-        return entry.$2;
-      }
-    }
-    return '';
+    canvas.drawLine(
+      point,
+      Offset(point.dx + (len * xDir), point.dy),
+      paint,
+    );
+    canvas.drawLine(
+      point,
+      Offset(point.dx, point.dy + (len * yDir)),
+      paint,
+    );
   }
 }

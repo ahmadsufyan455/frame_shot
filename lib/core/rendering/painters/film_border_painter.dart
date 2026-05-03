@@ -10,9 +10,11 @@ class FilmBorderPainter extends FramePainter {
     required super.exif,
     required super.config,
     super.watermark,
+    super.cameraLogo,
   });
 
-  double get _basePadding => imageSize.width * frameWeightMultiplier;
+  double get _basePadding =>
+      imageSize.width * frameWeightMultiplier;
 
   double get _sidePadding => _basePadding * 2.1;
 
@@ -20,12 +22,15 @@ class FilmBorderPainter extends FramePainter {
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final basePadding = imageSize.width * frameWeightMultiplier;
+    final basePadding =
+        imageSize.width * frameWeightMultiplier;
     final sidePadding = basePadding * 2.1;
     final panelHeight = imageSize.width * 0.1;
     return Size(
       imageSize.width + (sidePadding * 2),
-      imageSize.height + (basePadding * 2) + panelHeight,
+      imageSize.height +
+          (basePadding * 2) +
+          panelHeight,
     );
   }
 
@@ -59,57 +64,107 @@ class FilmBorderPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
+    if (fields.isEmpty) return;
+
     final bodySize = imageSize.width * 0.014;
-    final warmText = _blend(config.textColor, const ui.Color(0xFFD8B784), 0.5);
-    final accent = _blend(config.accentColor, const ui.Color(0xFF8C6A3A), 0.4);
-
-    final mainBits = [
-      _findValue(fields, 'Camera'),
-      _findValue(fields, 'Lens'),
-      _findValue(fields, 'Date'),
-    ].where((v) => v.isNotEmpty).join('   ');
-
-    final settings = [
-      _findValue(fields, 'Aperture'),
-      _findValue(fields, 'Shutter'),
-      _findValue(fields, 'ISO'),
-      _findValue(fields, 'Focal Length'),
-    ].where((v) => v.isNotEmpty).join(' | ');
-
-    final mainTp = buildTextPainter(
-      mainBits,
-      fontSize: bodySize,
-      color: warmText,
-      maxWidth: panelRect.width - (imageSize.width * 0.03),
+    final insetX = imageSize.width * 0.015;
+    final warmText = _blend(
+      config.textColor,
+      const ui.Color(0xFFD8B784),
+      0.5,
     );
-    mainTp.paint(
-      canvas,
-      Offset(panelRect.left + imageSize.width * 0.015, panelRect.top + 4),
+    final accent = _blend(
+      config.accentColor,
+      const ui.Color(0xFF8C6A3A),
+      0.4,
     );
 
-    final settingsTp = buildTextPainter(
-      settings,
-      fontSize: bodySize * 0.95,
-      color: accent,
-      maxWidth: panelRect.width - (imageSize.width * 0.03),
+    // -- Top row: logo + primary info --
+    final logoHeight = _panelHeight * 0.35;
+    var leftX = panelRect.left + insetX;
+
+    final logoW = cameraLogoWidth(
+      maxHeight: logoHeight,
     );
-    settingsTp.paint(
-      canvas,
-      Offset(
-        panelRect.left + imageSize.width * 0.015,
-        panelRect.bottom - settingsTp.height - 4,
-      ),
-    );
+    if (logoW > 0) {
+      paintCameraLogo(
+        canvas,
+        offset: Offset(leftX, panelRect.top + 4),
+        maxHeight: logoHeight,
+        tintColor: warmText,
+      );
+      leftX += logoW + (insetX * 0.5);
+    }
+
+    final primaryParts = fields
+        .where(
+          (f) =>
+              f.$1 == 'Camera' ||
+              f.$1 == 'Lens' ||
+              f.$1 == 'Date',
+        )
+        .map((f) => f.$2);
+    final mainBits = primaryParts.join('   ');
+
+    if (mainBits.isNotEmpty) {
+      final mainTp = buildTextPainter(
+        mainBits,
+        fontSize: bodySize,
+        color: warmText,
+        maxWidth: panelRect.width - leftX +
+            panelRect.left -
+            insetX,
+      );
+      mainTp.paint(
+        canvas,
+        Offset(leftX, panelRect.top + 4),
+      );
+    }
+
+    // -- Bottom row: all other settings --
+    final settingParts = fields
+        .where(
+          (f) =>
+              f.$1 != 'Camera' &&
+              f.$1 != 'Lens' &&
+              f.$1 != 'Date',
+        )
+        .map((f) => f.$2);
+    final settings = settingParts.join(' | ');
+
+    if (settings.isNotEmpty) {
+      final settingsTp = buildTextPainter(
+        settings,
+        fontSize: bodySize * 0.95,
+        color: accent,
+        maxWidth: panelRect.width - (insetX * 2),
+      );
+      settingsTp.paint(
+        canvas,
+        Offset(
+          panelRect.left + insetX,
+          panelRect.bottom -
+              settingsTp.height -
+              4,
+        ),
+      );
+    }
   }
 
-  void _paintSprocketColumns(Canvas canvas, Size totalSize) {
+  void _paintSprocketColumns(
+    Canvas canvas,
+    Size totalSize,
+  ) {
     final count = 10;
     final holeWidth = _sidePadding * 0.38;
-    final holeHeight = imageSize.height / (count * 1.65);
+    final holeHeight =
+        imageSize.height / (count * 1.65);
     final top = _basePadding + (holeHeight * 0.3);
-    final usableHeight = imageSize.height - (holeHeight * 0.6);
+    final usableHeight =
+        imageSize.height - (holeHeight * 0.6);
     final spacing = usableHeight / count;
-    final paint = Paint()..color = ui.Color.fromARGB(180, 0, 0, 0);
+    final paint = Paint()
+      ..color = ui.Color.fromARGB(180, 0, 0, 0);
 
     for (var i = 0; i < count; i++) {
       final y = top + (i * spacing);
@@ -124,7 +179,9 @@ class FilmBorderPainter extends FramePainter {
       );
       final rightRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(
-          totalSize.width - _sidePadding + ((_sidePadding - holeWidth) * 0.5),
+          totalSize.width -
+              _sidePadding +
+              ((_sidePadding - holeWidth) * 0.5),
           y,
           holeWidth,
           holeHeight,
@@ -134,15 +191,6 @@ class FilmBorderPainter extends FramePainter {
       canvas.drawRRect(leftRect, paint);
       canvas.drawRRect(rightRect, paint);
     }
-  }
-
-  String _findValue(List<(String, String)> fields, String label) {
-    for (final entry in fields) {
-      if (entry.$1 == label) {
-        return entry.$2;
-      }
-    }
-    return '';
   }
 
   ui.Color _blend(ui.Color a, ui.Color b, double t) {
