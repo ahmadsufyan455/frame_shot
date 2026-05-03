@@ -29,14 +29,13 @@ class _ExportScreenState
 
     ref.listen<ExportState>(
       exportProvider,
-      (_, next) {
+      (prev, next) {
         if (next.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(next.error!),
-              backgroundColor:
-                  Theme.of(context).colorScheme.error,
-            ),
+          _showErrorDialog(
+            context,
+            ref,
+            next.error!,
+            prev?.status ?? ExportStatus.idle,
           );
         }
         if (next.status == ExportStatus.done &&
@@ -128,6 +127,47 @@ class _ExportScreenState
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showErrorDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String error,
+    ExportStatus previousStatus,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(
+          Icons.error_outline,
+          color: Theme.of(ctx).colorScheme.error,
+        ),
+        title: const Text('Export Failed'),
+        content: Text(error),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              final notifier = ref.read(
+                exportProvider.notifier,
+              );
+              if (previousStatus ==
+                  ExportStatus.saving) {
+                notifier.saveToGallery(_settings);
+              } else {
+                notifier.shareToApp(_settings);
+              }
+            },
+            child: const Text('Retry'),
+          ),
+        ],
       ),
     );
   }
