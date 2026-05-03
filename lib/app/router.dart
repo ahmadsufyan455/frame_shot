@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/home/home_screen.dart';
+import '../features/preview/preview_screen.dart';
+import '../features/settings/settings_screen.dart';
+
 enum PaywallTrigger { style, customize, export }
 
 final goRouter = GoRouter(
@@ -9,39 +13,34 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/',
       name: 'home',
-      builder: (context, state) => const _Placeholder(
-        label: 'Home',
-      ),
+      builder: (context, state) =>
+          const HomeScreen(),
     ),
     GoRoute(
       path: '/preview',
       name: 'preview',
-      builder: (context, state) => const _Placeholder(
-        label: 'Preview',
-      ),
+      builder: (context, state) =>
+          const PreviewScreen(),
       routes: [
         GoRoute(
           path: 'export',
           name: 'export',
-          builder: (context, state) => const _Placeholder(
-            label: 'Export',
-          ),
+          builder: (context, state) =>
+              const _Placeholder(label: 'Export'),
         ),
       ],
     ),
     GoRoute(
       path: '/paywall',
       name: 'paywall',
-      builder: (context, state) {
-        return const _Placeholder(label: 'Paywall');
-      },
+      builder: (context, state) =>
+          const _Placeholder(label: 'Paywall'),
     ),
     GoRoute(
       path: '/settings',
       name: 'settings',
-      builder: (context, state) => const _Placeholder(
-        label: 'Settings',
-      ),
+      builder: (context, state) =>
+          const SettingsScreen(),
     ),
   ],
 );
