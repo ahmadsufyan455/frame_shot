@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/models/frame_style.dart';
 import '../../../core/services/purchase_service.dart';
 import '../../../core/services/storage_service.dart';
@@ -79,6 +80,7 @@ class Settings extends _$Settings {
 class ProStatus extends _$ProStatus {
   @override
   Future<bool> build() async {
+    if (AppConfig.forceProEnabled) return true;
     return PurchaseService.checkProStatus();
   }
 

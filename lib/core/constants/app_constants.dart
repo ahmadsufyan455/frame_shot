@@ -1,5 +1,11 @@
 library;
 
+abstract final class AppConfig {
+  /// Set to `true` to unlock all pro features without purchase.
+  /// MUST be `false` for production/store builds.
+  static const bool forceProEnabled = true;
+}
+
 abstract final class ImageConstants {
   /// ~2MP cap for free-tier exports.
   static const int freeMaxDimension = 1600;
