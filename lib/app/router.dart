@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/export/export_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/paywall/paywall_screen.dart';
 import '../features/preview/preview_screen.dart';
@@ -27,7 +27,7 @@ final goRouter = GoRouter(
           path: 'export',
           name: 'export',
           builder: (context, state) =>
-              const _Placeholder(label: 'Export'),
+              const ExportScreen(),
         ),
       ],
     ),
@@ -49,16 +49,4 @@ final goRouter = GoRouter(
   ],
 );
 
-class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.label});
 
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(label)),
-      body: Center(child: Text(label)),
-    );
-  }
-}
