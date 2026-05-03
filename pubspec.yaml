@@ -35,3 +35,27 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/logos/
+    - assets/watermark/
+
+  fonts:
+    - family: serif
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay_Regular.ttf
+    - family: sans
+      fonts:
+        - asset: assets/fonts/Inter_Regular.ttf
+    - family: mono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono_Regular.ttf
+    - family: displayA
+      fonts:
+        - asset: assets/fonts/BebasNeue_Regular.ttf
+    - family: displayB
+      fonts:
+        - asset: assets/fonts/Syne_Regular.ttf
+    - family: handwritten
+      fonts:
+        - asset: assets/fonts/Caveat_Regular.ttf
