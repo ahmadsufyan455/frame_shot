@@ -9,13 +9,12 @@ abstract final class ExifService {
   static Future<ExifData> extractFromFile(
     String filePath,
   ) async {
-    // Primary: run pure-Dart extraction in isolate.
+    final bytes = await File(filePath).readAsBytes();
+
     final primary = await Isolate.run(
-      () => _parseInIsolate(filePath),
+      () => ExifParser.parse(bytes),
     );
 
-    // If primary yields insufficient data, fall back
-    // to native_exif on the main thread.
     if (_isInsufficient(primary)) {
       final fallback =
           await NativeExifFallback.extract(filePath);
@@ -23,13 +22,6 @@ abstract final class ExifService {
     }
 
     return primary;
-  }
-
-  static Future<ExifData> _parseInIsolate(
-    String filePath,
-  ) async {
-    final bytes = File(filePath).readAsBytesSync();
-    return ExifParser.parse(bytes);
   }
 
   static bool _isInsufficient(ExifData data) {

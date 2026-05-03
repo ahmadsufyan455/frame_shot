@@ -15,9 +15,9 @@ part 'customize_providers.g.dart';
 class EditedExif extends _$EditedExif {
   @override
   ExifData build() {
-    final extracted =
-        ref.watch(exifExtractionProvider).value;
-    return extracted ?? ExifData.empty;
+    final asyncExif = ref.watch(exifExtractionProvider);
+    return asyncExif.whenOrNull(data: (d) => d) ??
+        ExifData.empty;
   }
 
   void update(ExifData exif) => state = exif;

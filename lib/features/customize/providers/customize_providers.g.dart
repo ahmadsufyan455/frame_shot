@@ -40,7 +40,7 @@ final class EditedExifProvider extends $NotifierProvider<EditedExif, ExifData> {
   }
 }
 
-String _$editedExifHash() => r'79255aa604b125a93f0ffcc14ea48f1334dbca42';
+String _$editedExifHash() => r'8c4cd7871f1a604cea37f31fc071245e1b2f85dd';
 
 abstract class _$EditedExif extends $Notifier<ExifData> {
   ExifData build();

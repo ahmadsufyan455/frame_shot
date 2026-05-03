@@ -20,7 +20,7 @@ final class SelectedImageProvider
         argument: null,
         retry: null,
         name: r'selectedImageProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class SelectedImageProvider
   }
 }
 
-String _$selectedImageHash() => r'b38644f59db78c9816c77e07b59977366dde6aa4';
+String _$selectedImageHash() => r'7f50b27aee2242c3a70937901d34554e2c122a28';
 
 abstract class _$SelectedImage extends $Notifier<ImageFile?> {
   ImageFile? build();
@@ -85,7 +85,7 @@ final class ExifExtractionProvider
   ExifExtraction create() => ExifExtraction();
 }
 
-String _$exifExtractionHash() => r'31c70e653d4f824517758087b5f701dc6e453722';
+String _$exifExtractionHash() => r'ed771458f7dbf82108fc3280e1337676dee67b74';
 
 abstract class _$ExifExtraction extends $AsyncNotifier<ExifData?> {
   FutureOr<ExifData?> build();
@@ -183,7 +183,7 @@ final class PreviewImageProvider
   }
 }
 
-String _$previewImageHash() => r'3edbd3c1e3d1493b8be4addfb9206e52bd79659d';
+String _$previewImageHash() => r'a60c31ff08f7c52c6c35be892a39ee3ce97e4cdc';
 
 @ProviderFor(locationPermission)
 final locationPermissionProvider = LocationPermissionProvider._();

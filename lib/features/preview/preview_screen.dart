@@ -27,7 +27,10 @@ class PreviewScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.tune),
             onPressed: () =>
-                CustomizeSheet.show(context),
+                CustomizeSheet.show(
+                  context,
+                  ref: ref,
+                ),
           ),
           IconButton(
             icon: const Icon(Icons.ios_share_outlined),
@@ -48,7 +51,10 @@ class PreviewScreen extends ConsumerWidget {
                     'tap fields to fill manually',
                 actionLabel: 'Edit',
                 onAction: () =>
-                    CustomizeSheet.show(context),
+                    CustomizeSheet.show(
+                      context,
+                      ref: ref,
+                    ),
               ),
             ),
           const Expanded(

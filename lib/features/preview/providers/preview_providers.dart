@@ -18,7 +18,7 @@ part 'preview_providers.g.dart';
 
 // -- TASK-062: selectedImageProvider --
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SelectedImage extends _$SelectedImage {
   @override
   ImageFile? build() => null;
@@ -36,7 +36,13 @@ class ExifExtraction extends _$ExifExtraction {
   Future<ExifData?> build() async {
     final image = ref.watch(selectedImageProvider);
     if (image == null) return null;
-    return ExifService.extractFromFile(image.path);
+    try {
+      return await ExifService.extractFromFile(
+        image.path,
+      );
+    } on Exception {
+      return ExifData.empty;
+    }
   }
 }
 
@@ -73,8 +79,10 @@ Future<ui.Image?> previewImage(Ref ref) async {
   final imageFile = ref.watch(selectedImageProvider);
   if (imageFile == null) return null;
 
-  final bytes =
-      await File(imageFile.path).readAsBytes();
+  final file = File(imageFile.path);
+  if (!file.existsSync()) return null;
+
+  final bytes = await file.readAsBytes();
   final codec = await ui.instantiateImageCodec(
     bytes,
     targetWidth: ImageConstants.previewMaxDimension,

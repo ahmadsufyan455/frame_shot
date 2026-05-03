@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../settings/providers/settings_providers.dart';
 import 'widgets/aspect_ratio_selector.dart';
 import 'widgets/color_picker_row.dart';
 import 'widgets/field_override_tile.dart';
@@ -11,7 +14,18 @@ import 'widgets/logo_toggle.dart';
 class CustomizeSheet extends StatelessWidget {
   const CustomizeSheet({super.key});
 
-  static void show(BuildContext context) {
+  static void show(
+    BuildContext context, {
+    WidgetRef? ref,
+  }) {
+    if (ref != null) {
+      final isPro =
+          ref.read(proStatusProvider).value ?? false;
+      if (!isPro) {
+        context.pushNamed('paywall');
+        return;
+      }
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
