@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/home/home_screen.dart';
+import '../features/paywall/paywall_screen.dart';
 import '../features/preview/preview_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -33,8 +34,11 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/paywall',
       name: 'paywall',
-      builder: (context, state) =>
-          const _Placeholder(label: 'Paywall'),
+      builder: (context, state) {
+        final trigger =
+            state.extra as PaywallTrigger?;
+        return PaywallScreen(trigger: trigger);
+      },
     ),
     GoRoute(
       path: '/settings',
