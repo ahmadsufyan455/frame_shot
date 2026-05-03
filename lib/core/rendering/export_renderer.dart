@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -73,26 +74,27 @@ abstract final class ExportRenderer {
       return byteData!.buffer.asUint8List();
     }
 
-    // JPEG: use the `image` package for quality control.
+    // JPEG: encode on a background isolate to avoid
+    // blocking the UI thread during heavy pixel work.
     final byteData = await outputImage.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     );
-    return _encodeJpeg(
-      byteData!,
-      totalSize,
-      settings.jpegQuality,
+    return Isolate.run(
+      () => _encodeJpeg(
+        byteData!.buffer.asUint8List(),
+        totalSize.width.toInt(),
+        totalSize.height.toInt(),
+        settings.jpegQuality,
+      ),
     );
   }
 
   static Uint8List _encodeJpeg(
-    ByteData rawRgba,
-    Size size,
+    Uint8List rgbaBytes,
+    int width,
+    int height,
     int quality,
   ) {
-    final width = size.width.toInt();
-    final height = size.height.toInt();
-    final rgbaBytes = rawRgba.buffer.asUint8List();
-
     final image = img.Image.fromBytes(
       width: width,
       height: height,
