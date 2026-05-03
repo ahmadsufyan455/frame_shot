@@ -15,6 +15,8 @@ class StyleCarousel extends ConsumerWidget {
     final styles = ref.watch(frameStylesProvider);
     final selectedId =
         ref.watch(selectedStyleProvider);
+    final isUserPro =
+        ref.watch(proStatusProvider).value ?? false;
 
     return SizedBox(
       height: 80,
@@ -29,6 +31,7 @@ class StyleCarousel extends ConsumerWidget {
           return StyleCard(
             style: style,
             isSelected: style.id == selectedId,
+            isUserPro: isUserPro,
             onTap: () => _onStyleTap(
               context,
               ref,

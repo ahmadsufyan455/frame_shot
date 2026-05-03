@@ -8,11 +8,13 @@ class StyleCard extends StatelessWidget {
     required this.style,
     required this.isSelected,
     required this.onTap,
+    this.isUserPro = false,
   });
 
   final FrameStyle style;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isUserPro;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class StyleCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (style.isPro)
+            if (style.isPro && !isUserPro)
               Icon(
                 Icons.lock_outline,
                 size: 16,

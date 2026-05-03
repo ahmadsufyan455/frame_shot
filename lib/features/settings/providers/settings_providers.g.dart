@@ -83,7 +83,7 @@ final class ProStatusProvider extends $AsyncNotifierProvider<ProStatus, bool> {
   ProStatus create() => ProStatus();
 }
 
-String _$proStatusHash() => r'9e36cde087f9a8bd224d4f6abebeb1a1b7fdf1bd';
+String _$proStatusHash() => r'5944935ca6915035a28ecedaf8004c7a6b0ca988';
 
 abstract class _$ProStatus extends $AsyncNotifier<bool> {
   FutureOr<bool> build();

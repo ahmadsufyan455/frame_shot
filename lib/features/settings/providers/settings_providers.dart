@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -79,7 +81,7 @@ class Settings extends _$Settings {
 @Riverpod(keepAlive: true)
 class ProStatus extends _$ProStatus {
   @override
-  Future<bool> build() async {
+  FutureOr<bool> build() {
     if (AppConfig.forceProEnabled) return true;
     return PurchaseService.checkProStatus();
   }
