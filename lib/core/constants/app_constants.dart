@@ -20,8 +20,7 @@ abstract final class DurationConstants {
   static const Duration fast = Duration(milliseconds: 200);
   static const Duration medium = Duration(milliseconds: 350);
   static const Duration slow = Duration(milliseconds: 500);
-  static const Duration pageTransition =
-      Duration(milliseconds: 300);
+  static const Duration pageTransition = Duration(milliseconds: 300);
 }
 
 abstract final class AppLimits {
@@ -31,5 +30,5 @@ abstract final class AppLimits {
 
 abstract final class DebugFlags {
   /// Set to true to bypass pro checks during development.
-  static const bool forceProEnabled = true;
+  static const bool forceProEnabled = false;
 }
