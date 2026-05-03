@@ -1,0 +1,114 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'customize_providers.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(EditedExif)
+final editedExifProvider = EditedExifProvider._();
+
+final class EditedExifProvider extends $NotifierProvider<EditedExif, ExifData> {
+  EditedExifProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'editedExifProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$editedExifHash();
+
+  @$internal
+  @override
+  EditedExif create() => EditedExif();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ExifData value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ExifData>(value),
+    );
+  }
+}
+
+String _$editedExifHash() => r'79255aa604b125a93f0ffcc14ea48f1334dbca42';
+
+abstract class _$EditedExif extends $Notifier<ExifData> {
+  ExifData build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<ExifData, ExifData>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ExifData, ExifData>,
+              ExifData,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(FrameConfigNotifier)
+final frameConfigProvider = FrameConfigNotifierProvider._();
+
+final class FrameConfigNotifierProvider
+    extends $NotifierProvider<FrameConfigNotifier, FrameConfig> {
+  FrameConfigNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'frameConfigProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$frameConfigNotifierHash();
+
+  @$internal
+  @override
+  FrameConfigNotifier create() => FrameConfigNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FrameConfig value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FrameConfig>(value),
+    );
+  }
+}
+
+String _$frameConfigNotifierHash() =>
+    r'91b68e118fadf08424e8ca3984058fb628a524ae';
+
+abstract class _$FrameConfigNotifier extends $Notifier<FrameConfig> {
+  FrameConfig build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<FrameConfig, FrameConfig>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FrameConfig, FrameConfig>,
+              FrameConfig,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
