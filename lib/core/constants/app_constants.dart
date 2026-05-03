@@ -27,8 +27,3 @@ abstract final class AppLimits {
   static const int maxPresets = 20;
   static const int maxFieldOverrideLength = 100;
 }
-
-abstract final class DebugFlags {
-  /// Set to true to bypass pro checks during development.
-  static const bool forceProEnabled = false;
-}
