@@ -74,6 +74,7 @@ class PreviewScreen extends ConsumerWidget {
               child: ErrorBanner(
                 message: 'No EXIF found \u2014 tap fields to fill manually',
                 actionLabel: 'Edit',
+                foregroundColor: Colors.white70,
                 onAction: () => CustomizeSheet.show(context, ref: ref),
               ),
             ),

@@ -14,9 +14,7 @@ part 'frame_preview_widget.g.dart';
 Future<ui.Image?> cameraLogoImage(Ref ref) async {
   final renderData = ref.watch(frameRenderDataProvider);
   if (!renderData.config.showCameraLogo) return null;
-  return BrandLogoLoader.load(
-    renderData.exif.cameraMake,
-  );
+  return BrandLogoLoader.load(renderData.exif.cameraMake);
 }
 
 class FramePreviewWidget extends ConsumerWidget {
@@ -25,10 +23,8 @@ class FramePreviewWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final imageAsync = ref.watch(previewImageProvider);
-    final renderData =
-        ref.watch(frameRenderDataProvider);
-    final logoAsync =
-        ref.watch(cameraLogoImageProvider);
+    final renderData = ref.watch(frameRenderDataProvider);
+    final logoAsync = ref.watch(cameraLogoImageProvider);
 
     return imageAsync.when(
       data: (image) {
@@ -46,12 +42,9 @@ class FramePreviewWidget extends ConsumerWidget {
           cameraLogo: cameraLogo,
         );
 
-        final totalSize = painter.calculateTotalSize(
-          painter.imageSize,
-        );
+        final totalSize = painter.calculateTotalSize(painter.imageSize);
 
-        final frameRatio =
-            totalSize.width / totalSize.height;
+        final frameRatio = totalSize.width / totalSize.height;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -69,18 +62,13 @@ class FramePreviewWidget extends ConsumerWidget {
 
             return Center(
               child: AnimatedContainer(
-                duration: const Duration(
-                  milliseconds: 300,
-                ),
+                duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 width: w,
                 height: h,
                 child: RepaintBoundary(
                   child: FittedBox(
-                    child: CustomPaint(
-                      size: totalSize,
-                      painter: painter,
-                    ),
+                    child: CustomPaint(size: totalSize, painter: painter),
                   ),
                 ),
               ),
@@ -88,12 +76,8 @@ class FramePreviewWidget extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
-      error: (e, _) => Center(
-        child: Text('Error: $e'),
-      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
 }

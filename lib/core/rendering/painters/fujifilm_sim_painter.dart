@@ -17,12 +17,12 @@ class FujifilmSimPainter extends FramePainter {
   static const _cardColor = ui.Color(0xFFFFFFFF);
   static const _textColor = ui.Color(0xFF1E3A3A);
 
-  double get _padding => imageSize.width * 0.08;
+  double get _padding => imageSize.width * frameWeightMultiplier;
   double get _panelHeight => imageSize.width * 0.08;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * 0.08;
+    final padding = imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.08;
     return Size(
       imageSize.width + (padding * 2),
@@ -34,10 +34,7 @@ class FujifilmSimPainter extends FramePainter {
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _bgColor);
 
     final cardRect = Rect.fromLTWH(
       _padding,
@@ -48,10 +45,7 @@ class FujifilmSimPainter extends FramePainter {
 
     final shadowPaint = Paint()
       ..color = const ui.Color(0x22000000)
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        8,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawRect(cardRect.inflate(2), shadowPaint);
     canvas.drawRect(cardRect, Paint()..color = _cardColor);
 
@@ -71,8 +65,7 @@ class FujifilmSimPainter extends FramePainter {
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
     final fontSize = imageSize.width * 0.038;
-    final centerY =
-        panelRect.top + (panelRect.height - fontSize) / 2;
+    final centerY = panelRect.top + (panelRect.height - fontSize) / 2;
 
     final camera = _findValue(fields, 'Camera');
     final focal = _findValue(fields, 'Focal Length');
@@ -90,10 +83,7 @@ class FujifilmSimPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      leftTp.paint(
-        canvas,
-        Offset(panelRect.left, centerY),
-      );
+      leftTp.paint(canvas, Offset(panelRect.left, centerY));
     }
 
     final centerTp = TextPainter(
@@ -110,11 +100,7 @@ class FujifilmSimPainter extends FramePainter {
     )..layout();
     centerTp.paint(
       canvas,
-      Offset(
-        panelRect.left +
-            (panelRect.width - centerTp.width) / 2,
-        centerY,
-      ),
+      Offset(panelRect.left + (panelRect.width - centerTp.width) / 2, centerY),
     );
 
     if (focal.isNotEmpty) {
@@ -130,20 +116,11 @@ class FujifilmSimPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      rightTp.paint(
-        canvas,
-        Offset(
-          panelRect.right - rightTp.width,
-          centerY,
-        ),
-      );
+      rightTp.paint(canvas, Offset(panelRect.right - rightTp.width, centerY));
     }
   }
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }

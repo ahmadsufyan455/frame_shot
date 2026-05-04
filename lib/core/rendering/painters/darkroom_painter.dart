@@ -17,12 +17,12 @@ class DarkroomPainter extends FramePainter {
   static const _innerBg = ui.Color(0xFF18181B);
   static const _textColor = ui.Color(0xFF9CA3AF);
 
-  double get _padding => imageSize.width * 0.04;
+  double get _padding => imageSize.width * frameWeightMultiplier;
   double get _panelHeight => imageSize.width * 0.12;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * 0.04;
+    final padding = imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.12;
     return Size(
       imageSize.width + (padding * 2),
@@ -34,10 +34,7 @@ class DarkroomPainter extends FramePainter {
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _bgColor);
 
     final innerRect = Rect.fromLTWH(
       _padding,
@@ -103,38 +100,23 @@ class DarkroomPainter extends FramePainter {
       );
     }
 
-    final rightParts = [focal, aperture, shutter]
-        .where((s) => s.isNotEmpty)
-        .join(' \u2022 ');
+    final rightParts = [
+      focal,
+      aperture,
+      shutter,
+    ].where((s) => s.isNotEmpty).join(' \u2022 ');
 
     if (rightParts.isNotEmpty) {
       final tp = _buildMono(rightParts, fontSize);
-      tp.paint(
-        canvas,
-        Offset(
-          panelRect.right - inset - tp.width,
-          topY,
-        ),
-      );
+      tp.paint(canvas, Offset(panelRect.right - inset - tp.width, topY));
     }
     if (iso.isNotEmpty) {
       final tp = _buildMono(iso, fontSize);
-      tp.paint(
-        canvas,
-        Offset(
-          panelRect.right - inset - tp.width,
-          bottomY,
-        ),
-      );
+      tp.paint(canvas, Offset(panelRect.right - inset - tp.width, bottomY));
     }
   }
 
-  void _paintMono(
-    Canvas canvas,
-    String text,
-    double fontSize,
-    Offset offset,
-  ) {
+  void _paintMono(Canvas canvas, String text, double fontSize, Offset offset) {
     final tp = _buildMono(text, fontSize);
     tp.paint(canvas, offset);
   }
@@ -155,10 +137,7 @@ class DarkroomPainter extends FramePainter {
     )..layout(maxWidth: imageSize.width * 0.48);
   }
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }

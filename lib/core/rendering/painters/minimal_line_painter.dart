@@ -15,11 +15,11 @@ class MinimalLinePainter extends FramePainter {
 
   static const _bgColor = ui.Color(0xFFFFFFFF);
 
-  double get _padding => imageSize.width * 0.06;
+  double get _padding => imageSize.width * frameWeightMultiplier;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * 0.06;
+    final padding = imageSize.width * frameWeightMultiplier;
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2),
@@ -30,10 +30,7 @@ class MinimalLinePainter extends FramePainter {
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _bgColor);
 
     final photoRect = Rect.fromLTWH(
       _padding,
@@ -65,9 +62,11 @@ class MinimalLinePainter extends FramePainter {
     final focal = _findValue(fields, 'Focal Length');
     final aperture = _findValue(fields, 'Aperture');
 
-    final parts = [camera, focal, aperture]
-        .where((s) => s.isNotEmpty)
-        .join(' \u2022 ');
+    final parts = [
+      camera,
+      focal,
+      aperture,
+    ].where((s) => s.isNotEmpty).join(' \u2022 ');
     if (parts.isEmpty) return;
 
     final fontSize = imageSize.width * 0.024;
@@ -90,43 +89,24 @@ class MinimalLinePainter extends FramePainter {
     final pillWidth = tp.width + (pillPadX * 2);
     final pillHeight = tp.height + (pillPadY * 2);
 
-    final pillLeft =
-        photoRect.left + (photoRect.width - pillWidth) / 2;
-    final pillTop = photoRect.bottom -
-        (imageSize.width * 0.04) -
-        pillHeight;
+    final pillLeft = photoRect.left + (photoRect.width - pillWidth) / 2;
+    final pillBottomInset = imageSize.width * 0.065;
+    final pillTop = photoRect.bottom - pillBottomInset - pillHeight;
 
     final pillRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        pillLeft,
-        pillTop,
-        pillWidth,
-        pillHeight,
-      ),
+      Rect.fromLTWH(pillLeft, pillTop, pillWidth, pillHeight),
       Radius.circular(pillHeight / 2),
     );
 
-    canvas.drawRRect(
-      pillRect,
-      Paint()..color = const ui.Color(0x99FFFFFF),
-    );
+    canvas.drawRRect(pillRect, Paint()..color = const ui.Color(0x99FFFFFF));
 
-    tp.paint(
-      canvas,
-      Offset(
-        pillLeft + pillPadX,
-        pillTop + pillPadY,
-      ),
-    );
+    tp.paint(canvas, Offset(pillLeft + pillPadX, pillTop + pillPadY));
   }
 
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {}
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }

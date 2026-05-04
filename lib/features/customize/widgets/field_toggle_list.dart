@@ -2,43 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/frame_config.dart';
+import '../../../core/models/frame_customization_spec.dart';
+import '../../preview/providers/style_providers.dart';
 import '../providers/customize_providers.dart';
 
 class FieldToggleList extends ConsumerWidget {
   const FieldToggleList({super.key});
 
-  /// Primary fields the user can toggle on/off.
-  /// Secondary fields (aperture, shutter, ISO, etc.)
-  /// are always enabled and curated by each frame
-  /// style.
-  static const _fields = [
-    ('camera', 'Camera'),
-    ('lens', 'Lens'),
-    ('dateTime', 'Date & Time'),
-    ('location', 'Location'),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final visibility = ref.watch(
-      frameConfigProvider
-          .select((c) => c.visibleFields),
+      frameConfigProvider.select((c) => c.visibleFields),
     );
+    final styleId = ref.watch(selectedStyleProvider);
+    final fields = FrameCustomizationSpecs.forStyle(styleId).metadataFields;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: _fields.map((entry) {
-        final (key, label) = entry;
+      children: fields.map((field) {
         return SwitchListTile.adaptive(
           title: Text(
-            label,
-            style:
-                Theme.of(context).textTheme.bodyMedium,
+            field.label,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          value: _getValue(visibility, key),
-          onChanged: (v) => ref
-              .read(frameConfigProvider.notifier)
-              .toggleField(key, v),
+          value: _getValue(visibility, field.key),
+          onChanged: (v) =>
+              ref.read(frameConfigProvider.notifier).toggleField(field.key, v),
           dense: true,
           contentPadding: EdgeInsets.zero,
         );
@@ -46,15 +35,19 @@ class FieldToggleList extends ConsumerWidget {
     );
   }
 
-  bool _getValue(
-    ExifFieldVisibility v,
-    String key,
-  ) {
+  bool _getValue(ExifFieldVisibility v, String key) {
     return switch (key) {
       'camera' => v.camera,
       'lens' => v.lens,
+      'aperture' => v.aperture,
+      'shutterSpeed' => v.shutterSpeed,
+      'iso' => v.iso,
+      'focalLength' => v.focalLength,
+      'exposureComp' => v.exposureComp,
+      'whiteBalance' => v.whiteBalance,
       'dateTime' => v.dateTime,
       'location' => v.location,
+      'dimensions' => v.dimensions,
       _ => false,
     };
   }

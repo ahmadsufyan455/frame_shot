@@ -17,14 +17,14 @@ class FilmBorderPainter extends FramePainter {
   static const _borderColor = ui.Color(0xFF0A0A0A);
   static const _goldText = ui.Color(0xFFF2CB05);
 
-  double get _padding => imageSize.width * 0.04;
-  double get _sideBorder => imageSize.width * 0.04;
+  double get _padding => imageSize.width * frameWeightMultiplier;
+  double get _sideBorder => imageSize.width * frameWeightMultiplier;
   double get _panelHeight => imageSize.width * 0.08;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * 0.04;
-    final sideBorder = imageSize.width * 0.04;
+    final padding = imageSize.width * frameWeightMultiplier;
+    final sideBorder = imageSize.width * frameWeightMultiplier;
     final panelHeight = imageSize.width * 0.08;
     return Size(
       imageSize.width + (padding * 2) + (sideBorder * 2),
@@ -36,20 +36,12 @@ class FilmBorderPainter extends FramePainter {
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _bgColor);
 
     final borderLeft = _padding;
     final borderRight = totalSize.width - _padding;
     canvas.drawRect(
-      Rect.fromLTWH(
-        borderLeft,
-        0,
-        _sideBorder,
-        totalSize.height,
-      ),
+      Rect.fromLTWH(borderLeft, 0, _sideBorder, totalSize.height),
       Paint()..color = _borderColor,
     );
     canvas.drawRect(
@@ -87,36 +79,26 @@ class FilmBorderPainter extends FramePainter {
     final fields = visibleFields;
     final fontSize = imageSize.width * 0.022;
     final gap = imageSize.width * 0.02;
-    final centerY =
-        panelRect.top +
-        (panelRect.height - fontSize) / 2;
+    final centerY = panelRect.top + (panelRect.height - fontSize) / 2;
 
-    final leftTp = _buildGoldText(
-      'KODAK PORTRA 400',
-      fontSize,
-    );
-    leftTp.paint(
-      canvas,
-      Offset(panelRect.left, centerY),
-    );
+    final leftTp = _buildGoldText('KODAK PORTRA 400', fontSize);
+    leftTp.paint(canvas, Offset(panelRect.left, centerY));
 
     final rightTp = _buildGoldText('36', fontSize);
-    rightTp.paint(
-      canvas,
-      Offset(panelRect.right - rightTp.width, centerY),
-    );
+    rightTp.paint(canvas, Offset(panelRect.right - rightTp.width, centerY));
 
     final aperture = _findValue(fields, 'Aperture');
     final shutter = _findValue(fields, 'Shutter');
     final camera = _findValue(fields, 'Camera');
-    final centerParts = [aperture, shutter, camera]
-        .where((s) => s.isNotEmpty)
-        .join('  ');
+    final centerParts = [
+      aperture,
+      shutter,
+      camera,
+    ].where((s) => s.isNotEmpty).join('  ');
 
     if (centerParts.isNotEmpty) {
       final leftEdge = panelRect.left + leftTp.width + gap;
-      final rightEdge =
-          panelRect.right - rightTp.width - gap;
+      final rightEdge = panelRect.right - rightTp.width - gap;
       final availableWidth = rightEdge - leftEdge;
 
       if (availableWidth > fontSize * 2) {
@@ -136,20 +118,13 @@ class FilmBorderPainter extends FramePainter {
           ellipsis: '\u2026',
         )..layout(maxWidth: availableWidth);
 
-        final centerX =
-            leftEdge + (availableWidth - centerTp.width) / 2;
-        centerTp.paint(
-          canvas,
-          Offset(centerX, centerY),
-        );
+        final centerX = leftEdge + (availableWidth - centerTp.width) / 2;
+        centerTp.paint(canvas, Offset(centerX, centerY));
       }
     }
   }
 
-  TextPainter _buildGoldText(
-    String text,
-    double fontSize,
-  ) {
+  TextPainter _buildGoldText(String text, double fontSize) {
     return TextPainter(
       text: TextSpan(
         text: text,
@@ -165,10 +140,7 @@ class FilmBorderPainter extends FramePainter {
     )..layout();
   }
 
-  void _paintSprocketHoles(
-    Canvas canvas,
-    Size totalSize,
-  ) {
+  void _paintSprocketHoles(Canvas canvas, Size totalSize) {
     final count = 12;
     final holeWidth = _sideBorder * 0.5;
     final holeHeight = totalSize.height / (count * 2);
@@ -176,8 +148,7 @@ class FilmBorderPainter extends FramePainter {
     final paint = Paint()..color = _bgColor;
 
     for (var i = 0; i < count; i++) {
-      final y =
-          (i * spacing) + (spacing - holeHeight) / 2;
+      final y = (i * spacing) + (spacing - holeHeight) / 2;
 
       final leftRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(
@@ -205,10 +176,7 @@ class FilmBorderPainter extends FramePainter {
     }
   }
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }

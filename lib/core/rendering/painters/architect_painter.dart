@@ -13,17 +13,15 @@ class ArchitectPainter extends FramePainter {
     super.cameraLogo,
   });
 
-  static const _bgColor = ui.Color(0xFF0A0A0A);
-  static const _red = ui.Color(0xFFEF4444);
-  static const _redDim = ui.Color(0x4DEF4444);
-  static const _redBg = ui.Color(0x0DEF4444);
-
-  double get _padding => imageSize.width * 0.04;
+  double get _padding => imageSize.width * frameWeightMultiplier;
   double get _hudHeight => imageSize.width * 0.10;
+  ui.Color get _accentColor => config.accentColor;
+  ui.Color get _backgroundColor => config.backgroundColor;
+  ui.Color get _textColor => config.textColor;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * 0.04;
+    final padding = imageSize.width * frameWeightMultiplier;
     final hudHeight = imageSize.width * 0.10;
     return Size(
       imageSize.width + (padding * 2),
@@ -35,10 +33,7 @@ class ArchitectPainter extends FramePainter {
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _backgroundColor);
 
     final photoRect = Rect.fromLTWH(
       _padding,
@@ -83,26 +78,17 @@ class ArchitectPainter extends FramePainter {
     }
   }
 
-  void _paintViewfinderCorners(
-    Canvas canvas,
-    Rect rect,
-  ) {
+  void _paintViewfinderCorners(Canvas canvas, Rect rect) {
     final len = imageSize.width * 0.03;
     final paint = Paint()
-      ..color = _red
+      ..color = _accentColor
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
     _drawCorner(canvas, rect.topLeft, len, 1, 1, paint);
-    _drawCorner(
-      canvas, rect.topRight, len, -1, 1, paint,
-    );
-    _drawCorner(
-      canvas, rect.bottomLeft, len, 1, -1, paint,
-    );
-    _drawCorner(
-      canvas, rect.bottomRight, len, -1, -1, paint,
-    );
+    _drawCorner(canvas, rect.topRight, len, -1, 1, paint);
+    _drawCorner(canvas, rect.bottomLeft, len, 1, -1, paint);
+    _drawCorner(canvas, rect.bottomRight, len, -1, -1, paint);
   }
 
   void _drawCorner(
@@ -113,23 +99,15 @@ class ArchitectPainter extends FramePainter {
     int yDir,
     Paint paint,
   ) {
-    canvas.drawLine(
-      point,
-      Offset(point.dx + (len * xDir), point.dy),
-      paint,
-    );
-    canvas.drawLine(
-      point,
-      Offset(point.dx, point.dy + (len * yDir)),
-      paint,
-    );
+    canvas.drawLine(point, Offset(point.dx + (len * xDir), point.dy), paint);
+    canvas.drawLine(point, Offset(point.dx, point.dy + (len * yDir)), paint);
   }
 
   void _paintCrosshair(Canvas canvas, Rect rect) {
     final center = rect.center;
     final armLen = imageSize.width * 0.025;
     final paint = Paint()
-      ..color = _red.withValues(alpha: 0.5)
+      ..color = _accentColor.withValues(alpha: 0.5)
       ..strokeWidth = 1;
 
     canvas.drawLine(
@@ -160,8 +138,7 @@ class ArchitectPainter extends FramePainter {
     ];
 
     final gap = imageSize.width * 0.005;
-    final cellWidth =
-        (hudRect.width - (gap * 3)) / 4;
+    final cellWidth = (hudRect.width - (gap * 3)) / 4;
     final cellHeight = hudRect.height;
 
     final labelSize = imageSize.width * 0.022;
@@ -169,18 +146,16 @@ class ArchitectPainter extends FramePainter {
 
     for (var i = 0; i < cells.length; i++) {
       final x = hudRect.left + (i * (cellWidth + gap));
-      final cellRect = Rect.fromLTWH(
-        x,
-        hudRect.top,
-        cellWidth,
-        cellHeight,
-      );
+      final cellRect = Rect.fromLTWH(x, hudRect.top, cellWidth, cellHeight);
 
-      canvas.drawRect(cellRect, Paint()..color = _redBg);
+      canvas.drawRect(
+        cellRect,
+        Paint()..color = _accentColor.withValues(alpha: 0.05),
+      );
       canvas.drawRect(
         cellRect,
         Paint()
-          ..color = _redDim
+          ..color = _accentColor.withValues(alpha: 0.3)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1,
       );
@@ -191,7 +166,7 @@ class ArchitectPainter extends FramePainter {
           style: TextStyle(
             fontFamily: 'monospace',
             fontSize: labelSize,
-            color: _red.withValues(alpha: 0.6),
+            color: _textColor.withValues(alpha: 0.6),
             letterSpacing: labelSize * 0.2,
           ),
         ),
@@ -214,7 +189,7 @@ class ArchitectPainter extends FramePainter {
             fontFamily: 'monospace',
             fontSize: valueSize,
             fontWeight: FontWeight.w700,
-            color: _red,
+            color: _textColor,
             letterSpacing: valueSize * 0.05,
           ),
         ),
@@ -224,10 +199,7 @@ class ArchitectPainter extends FramePainter {
 
       valueTp.paint(
         canvas,
-        Offset(
-          cellRect.center.dx - valueTp.width / 2,
-          cellRect.center.dy,
-        ),
+        Offset(cellRect.center.dx - valueTp.width / 2, cellRect.center.dy),
       );
     }
   }
@@ -235,10 +207,7 @@ class ArchitectPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {}
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }

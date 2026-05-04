@@ -16,8 +16,7 @@ class EditedExif extends _$EditedExif {
   @override
   ExifData build() {
     final asyncExif = ref.watch(exifExtractionProvider);
-    return asyncExif.whenOrNull(data: (d) => d) ??
-        ExifData.empty;
+    return asyncExif.whenOrNull(data: (d) => d) ?? ExifData.empty;
   }
 
   void update(ExifData exif) => state = exif;
@@ -52,8 +51,7 @@ class FrameConfigNotifier extends _$FrameConfigNotifier {
   FrameConfig build() {
     final styleId = ref.watch(selectedStyleProvider);
     final styles = ref.watch(frameStylesProvider);
-    final style =
-        styles.firstWhere((s) => s.id == styleId);
+    final style = styles.firstWhere((s) => s.id == styleId);
     return style.defaultConfig;
   }
 
@@ -89,28 +87,27 @@ class FrameConfigNotifier extends _$FrameConfigNotifier {
     state = state.copyWith(showLocation: show);
   }
 
-  /// Only primary fields (camera, lens, dateTime,
-  /// location) are user-toggleable. Secondary fields
-  /// are always enabled and curated by each frame
-  /// style's painter.
   void toggleField(String field, bool visible) {
     final current = state.visibleFields;
     final updated = switch (field) {
-      'camera' =>
-        current.copyWith(camera: visible),
+      'camera' => current.copyWith(camera: visible),
       'lens' => current.copyWith(lens: visible),
-      'dateTime' =>
-        current.copyWith(dateTime: visible),
-      'location' =>
-        current.copyWith(location: visible),
+      'aperture' => current.copyWith(aperture: visible),
+      'shutterSpeed' => current.copyWith(shutterSpeed: visible),
+      'iso' => current.copyWith(iso: visible),
+      'focalLength' => current.copyWith(focalLength: visible),
+      'exposureComp' => current.copyWith(exposureComp: visible),
+      'whiteBalance' => current.copyWith(whiteBalance: visible),
+      'dateTime' => current.copyWith(dateTime: visible),
+      'location' => current.copyWith(location: visible),
+      'dimensions' => current.copyWith(dimensions: visible),
       _ => current,
     };
     state = state.copyWith(visibleFields: updated);
   }
 
   void setFieldOverride(String field, String value) {
-    final overrides =
-        Map<String, String>.from(state.fieldOverrides);
+    final overrides = Map<String, String>.from(state.fieldOverrides);
     if (value.isEmpty) {
       overrides.remove(field);
     } else {

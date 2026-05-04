@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/models/frame_config.dart';
+import '../../core/models/frame_customization_spec.dart';
+import '../preview/providers/style_providers.dart';
 import '../settings/providers/settings_providers.dart';
 import 'providers/customize_providers.dart';
 import 'widgets/color_picker_row.dart';
 import 'widgets/field_override_tile.dart';
 import 'widgets/field_toggle_list.dart';
-import 'widgets/font_picker.dart';
 
 class CustomizeSheet extends ConsumerWidget {
   const CustomizeSheet({super.key, required this.onAdvancedPressed});
@@ -58,6 +59,8 @@ class CustomizeSheet extends ConsumerWidget {
     final frameWeight = ref.watch(
       frameConfigProvider.select((config) => config.frameWeight),
     );
+    final styleId = ref.watch(selectedStyleProvider);
+    final spec = FrameCustomizationSpecs.forStyle(styleId);
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -115,16 +118,18 @@ class CustomizeSheet extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              _QuickControlRow(
-                label: 'Camera Logo',
-                trailing: _CompactSwitch(
-                  value: showLogo,
-                  onChanged: (value) => ref
-                      .read(frameConfigProvider.notifier)
-                      .toggleCameraLogo(value),
+              if (spec.supportsCameraLogo) ...[
+                _QuickControlRow(
+                  label: 'Camera Logo',
+                  trailing: _CompactSwitch(
+                    value: showLogo,
+                    onChanged: (value) => ref
+                        .read(frameConfigProvider.notifier)
+                        .toggleCameraLogo(value),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               _QuickControlRow(
                 label: 'Border Weight',
                 trailing: _FrameWeightPills(
@@ -171,11 +176,13 @@ class CustomizeSheet extends ConsumerWidget {
   }
 }
 
-class _AdvancedCustomizeSheet extends StatelessWidget {
+class _AdvancedCustomizeSheet extends ConsumerWidget {
   const _AdvancedCustomizeSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final styleId = ref.watch(selectedStyleProvider);
+    final spec = FrameCustomizationSpecs.forStyle(styleId);
     final baseTheme = Theme.of(context);
     final advancedTheme = baseTheme.copyWith(
       colorScheme: baseTheme.colorScheme.copyWith(
@@ -240,44 +247,22 @@ class _AdvancedCustomizeSheet extends StatelessWidget {
               child: ListView(
                 controller: scrollController,
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                children: const [
-                  _AdvancedHeader(),
-                  SizedBox(height: 24),
-                  _SectionHeader(title: 'Colors'),
-                  ColorPickerRow(),
-                  SizedBox(height: 20),
-                  _SectionHeader(title: 'Font'),
-                  FontPicker(),
-                  SizedBox(height: 20),
-                  _SectionHeader(title: 'Show / Hide'),
-                  FieldToggleList(),
-                  SizedBox(height: 20),
-                  _SectionHeader(title: 'Override Values'),
-                  FieldOverrideTile(
-                    fieldName: 'cameraMake',
-                    label: 'Camera Make',
-                  ),
-                  FieldOverrideTile(
-                    fieldName: 'cameraModel',
-                    label: 'Camera Model',
-                  ),
-                  FieldOverrideTile(
-                    fieldName: 'lensModel',
-                    label: 'Lens Model',
-                  ),
-                  FieldOverrideTile(
-                    fieldName: 'shutterSpeed',
-                    label: 'Shutter Speed',
-                  ),
-                  FieldOverrideTile(
-                    fieldName: 'whiteBalance',
-                    label: 'White Balance',
-                  ),
-                  FieldOverrideTile(
-                    fieldName: 'locationName',
-                    label: 'Location',
-                  ),
-                  SizedBox(height: 24),
+                children: [
+                  const _AdvancedHeader(),
+                  const SizedBox(height: 24),
+                  if (spec.supportsAccentColor ||
+                      spec.supportsBackgroundColor ||
+                      spec.supportsTextColor) ...[
+                    const _SectionHeader(title: 'Colors'),
+                    _StyleColorControls(spec: spec),
+                    const SizedBox(height: 20),
+                  ],
+                  const _SectionHeader(title: 'Show / Hide'),
+                  const FieldToggleList(),
+                  const SizedBox(height: 20),
+                  const _SectionHeader(title: 'Override Values'),
+                  const FieldOverrideList(),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -316,6 +301,28 @@ class _AdvancedHeader extends StatelessWidget {
           ),
           child: const Text('Done'),
         ),
+      ],
+    );
+  }
+}
+
+class _StyleColorControls extends StatelessWidget {
+  const _StyleColorControls({required this.spec});
+
+  final FrameCustomizationSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (spec.supportsAccentColor) const AccentColorPicker(),
+        if (spec.supportsAccentColor &&
+            (spec.supportsBackgroundColor || spec.supportsTextColor))
+          const SizedBox(width: 28),
+        if (spec.supportsBackgroundColor) const BackgroundColorPicker(),
+        if (spec.supportsBackgroundColor && spec.supportsTextColor)
+          const SizedBox(width: 28),
+        if (spec.supportsTextColor) const TextColorPicker(),
       ],
     );
   }

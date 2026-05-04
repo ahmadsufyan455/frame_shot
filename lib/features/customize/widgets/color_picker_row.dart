@@ -17,25 +17,85 @@ class ColorPickerRow extends ConsumerWidget {
         _ColorCircle(
           label: 'Background',
           color: config.backgroundColor,
-          onColorChanged: (c) => ref
-              .read(frameConfigProvider.notifier)
-              .updateBackgroundColor(c),
+          onColorChanged: (c) =>
+              ref.read(frameConfigProvider.notifier).updateBackgroundColor(c),
         ),
         _ColorCircle(
           label: 'Text',
           color: config.textColor,
-          onColorChanged: (c) => ref
-              .read(frameConfigProvider.notifier)
-              .updateTextColor(c),
+          onColorChanged: (c) =>
+              ref.read(frameConfigProvider.notifier).updateTextColor(c),
         ),
         _ColorCircle(
           label: 'Accent',
           color: config.accentColor,
-          onColorChanged: (c) => ref
-              .read(frameConfigProvider.notifier)
-              .updateAccentColor(c),
+          onColorChanged: (c) =>
+              ref.read(frameConfigProvider.notifier).updateAccentColor(c),
         ),
       ],
+    );
+  }
+}
+
+class AccentColorPicker extends ConsumerWidget {
+  const AccentColorPicker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final accentColor = ref.watch(
+      frameConfigProvider.select((config) => config.accentColor),
+    );
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: _ColorCircle(
+        label: 'Border Color',
+        color: accentColor,
+        onColorChanged: (color) =>
+            ref.read(frameConfigProvider.notifier).updateAccentColor(color),
+      ),
+    );
+  }
+}
+
+class BackgroundColorPicker extends ConsumerWidget {
+  const BackgroundColorPicker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backgroundColor = ref.watch(
+      frameConfigProvider.select((config) => config.backgroundColor),
+    );
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: _ColorCircle(
+        label: 'Background',
+        color: backgroundColor,
+        onColorChanged: (color) =>
+            ref.read(frameConfigProvider.notifier).updateBackgroundColor(color),
+      ),
+    );
+  }
+}
+
+class TextColorPicker extends ConsumerWidget {
+  const TextColorPicker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textColor = ref.watch(
+      frameConfigProvider.select((config) => config.textColor),
+    );
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: _ColorCircle(
+        label: 'Text',
+        color: textColor,
+        onColorChanged: (color) =>
+            ref.read(frameConfigProvider.notifier).updateTextColor(color),
+      ),
     );
   }
 }
@@ -67,17 +127,12 @@ class _ColorCircle extends StatelessWidget {
               color: color,
               shape: BoxShape.circle,
               border: Border.all(
-                color: colorScheme.outline
-                    .withValues(alpha: 0.3),
+                color: colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            label,
-            style:
-                Theme.of(context).textTheme.labelLarge,
-          ),
+          Text(label, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),
     );

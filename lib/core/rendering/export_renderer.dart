@@ -24,29 +24,21 @@ abstract final class ExportRenderer {
     required bool isPro,
   }) async {
     // 1. Decode source at full or capped resolution.
-    final bytes =
-        await File(sourceImagePath).readAsBytes();
+    final bytes = await File(sourceImagePath).readAsBytes();
     final codec = await ui.instantiateImageCodec(
       bytes,
-      targetWidth: isPro
-          ? null
-          : ExportSettings.freeMaxDimension,
+      targetWidth: isPro ? null : ExportSettings.freeMaxDimension,
     );
     final frame = await codec.getNextFrame();
     final fullImage = frame.image;
 
     // 2. Load watermark for free tier.
-    final ui.Image? watermark =
-        isPro ? null : await WatermarkLoader.load();
+    final ui.Image? watermark = isPro ? null : await WatermarkLoader.load();
 
     // 3. Load camera logo if enabled.
-    final ui.Image? cameraLogo =
-        config.showCameraLogo
-            ? await BrandLogoLoader.load(
-                exif.cameraMake,
-                size: 256,
-              )
-            : null;
+    final ui.Image? cameraLogo = config.showCameraLogo
+        ? await BrandLogoLoader.load(exif.cameraMake, size: 256)
+        : null;
 
     // 4. Create painter at full resolution.
     final painter = FramePainterFactory.create(
@@ -58,9 +50,7 @@ abstract final class ExportRenderer {
       cameraLogo: cameraLogo,
     );
 
-    final totalSize = painter.calculateTotalSize(
-      painter.imageSize,
-    );
+    final totalSize = painter.calculateTotalSize(painter.imageSize);
 
     // 5. Record to picture.
     final recorder = ui.PictureRecorder();
@@ -111,8 +101,6 @@ abstract final class ExportRenderer {
       order: img.ChannelOrder.rgba,
     );
 
-    return Uint8List.fromList(
-      img.encodeJpg(image, quality: quality),
-    );
+    return Uint8List.fromList(img.encodeJpg(image, quality: quality));
   }
 }

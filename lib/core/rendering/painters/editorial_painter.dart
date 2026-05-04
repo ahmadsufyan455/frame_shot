@@ -15,29 +15,23 @@ class EditorialPainter extends FramePainter {
   static const _textColor = Color(0xFF000000);
   static const _subtextColor = Color(0xFF737373);
 
-  double get _horizontalPadding => imageSize.width * 0.04;
-  double get _topPadding => imageSize.width * 0.04;
+  double get _horizontalPadding => imageSize.width * frameWeightMultiplier;
+  double get _topPadding => imageSize.width * frameWeightMultiplier;
   double get _panelHeight => imageSize.width * 0.16;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final hPad = imageSize.width * 0.04;
-    final tPad = imageSize.width * 0.04;
+    final hPad = imageSize.width * frameWeightMultiplier;
+    final tPad = imageSize.width * frameWeightMultiplier;
     final panel = imageSize.width * 0.16;
-    return Size(
-      imageSize.width + (hPad * 2),
-      imageSize.height + tPad + panel,
-    );
+    return Size(imageSize.width + (hPad * 2), imageSize.height + tPad + panel);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
 
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = _bgColor,
-    );
+    canvas.drawRect(Offset.zero & totalSize, Paint()..color = _bgColor);
 
     final photoRect = Rect.fromLTWH(
       _horizontalPadding,
@@ -63,9 +57,7 @@ class EditorialPainter extends FramePainter {
     final centerX = panelRect.center.dx;
     final centerY = panelRect.center.dy;
 
-    final camera = _findValue(fields, 'Camera');
-    final make = exif.cameraMake ?? '';
-    final brandName = make.isNotEmpty ? make : camera;
+    final brandName = _findValue(fields, 'Camera');
 
     if (brandName.isNotEmpty) {
       final brandTp = TextPainter(
@@ -73,14 +65,16 @@ class EditorialPainter extends FramePainter {
           text: brandName.toUpperCase(),
           style: TextStyle(
             fontFamily: 'serif',
-            fontSize: imageSize.width * 0.055,
+            fontSize: imageSize.width * 0.046,
             fontWeight: FontWeight.w600,
             color: _textColor,
-            letterSpacing: imageSize.width * 0.005,
+            letterSpacing: imageSize.width * 0.004,
           ),
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
+        maxLines: 1,
+        ellipsis: '\u2026',
       )..layout(maxWidth: panelRect.width * 0.8);
 
       brandTp.paint(
@@ -132,18 +126,12 @@ class EditorialPainter extends FramePainter {
 
       metaTp.paint(
         canvas,
-        Offset(
-          centerX - metaTp.width / 2,
-          dividerY + imageSize.width * 0.015,
-        ),
+        Offset(centerX - metaTp.width / 2, dividerY + imageSize.width * 0.015),
       );
     }
   }
 
-  String _findValue(
-    List<(String, String)> fields,
-    String label,
-  ) {
+  String _findValue(List<(String, String)> fields, String label) {
     for (final entry in fields) {
       if (entry.$1 == label) return entry.$2;
     }
