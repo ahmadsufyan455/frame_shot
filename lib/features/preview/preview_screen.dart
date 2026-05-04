@@ -125,8 +125,6 @@ class PreviewScreen extends ConsumerWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(width: 6),
-                          Icon(Icons.lock, size: 14, color: Colors.white54),
                         ],
                       ),
                     ),
