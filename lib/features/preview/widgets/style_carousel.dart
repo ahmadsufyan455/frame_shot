@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/models/exif_data.dart';
 import '../../../core/models/frame_style.dart';
 import '../../settings/providers/settings_providers.dart';
+import '../providers/preview_providers.dart';
 import '../providers/style_providers.dart';
+import 'frame_preview_widget.dart';
 import 'style_card.dart';
 
 class StyleCarousel extends ConsumerWidget {
@@ -18,24 +21,39 @@ class StyleCarousel extends ConsumerWidget {
     final isUserPro =
         ref.watch(proStatusProvider).value ?? false;
 
+    final image = ref.watch(previewImageProvider).value;
+    final exif =
+        ref.watch(exifExtractionProvider).value ??
+            ExifData.empty;
+    final cameraLogo =
+        ref.watch(cameraLogoImageProvider).value;
+
     return SizedBox(
-      height: 80,
+      height: 110,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
-          horizontal: 10,
+          horizontal: 16,
         ),
         itemCount: styles.length,
         itemBuilder: (context, index) {
           final style = styles[index];
-          return StyleCard(
-            style: style,
-            isSelected: style.id == selectedId,
-            isUserPro: isUserPro,
-            onTap: () => _onStyleTap(
-              context,
-              ref,
-              style,
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6,
+            ),
+            child: StyleCard(
+              style: style,
+              isSelected: style.id == selectedId,
+              isUserPro: isUserPro,
+              image: image,
+              exif: exif,
+              cameraLogo: cameraLogo,
+              onTap: () => _onStyleTap(
+                context,
+                ref,
+                style,
+              ),
             ),
           );
         },

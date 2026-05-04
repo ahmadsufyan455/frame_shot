@@ -59,10 +59,7 @@ abstract final class ExportRenderer {
     );
 
     final totalSize = painter.calculateTotalSize(
-      Size(
-        fullImage.width.toDouble(),
-        fullImage.height.toDouble(),
-      ),
+      painter.imageSize,
     );
 
     // 5. Record to picture.

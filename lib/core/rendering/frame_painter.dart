@@ -27,14 +27,43 @@ abstract class FramePainter extends CustomPainter {
   void paintInfoPanel(Canvas canvas, Rect panelRect);
 
   void paintPhoto(Canvas canvas, Rect photoRect) {
-    final src = Rect.fromLTWH(
-      0,
-      0,
-      image.width.toDouble(),
-      image.height.toDouble(),
-    );
+    final src = _croppedSourceRect();
     canvas.drawImageRect(image, src, photoRect, Paint());
   }
+
+  Rect _croppedSourceRect() {
+    final imgW = image.width.toDouble();
+    final imgH = image.height.toDouble();
+    final targetRatio = _numericAspectRatio;
+
+    if (targetRatio == null) {
+      return Rect.fromLTWH(0, 0, imgW, imgH);
+    }
+
+    final imgRatio = imgW / imgH;
+    double cropW, cropH;
+
+    if (imgRatio > targetRatio) {
+      cropH = imgH;
+      cropW = imgH * targetRatio;
+    } else {
+      cropW = imgW;
+      cropH = imgW / targetRatio;
+    }
+
+    final left = (imgW - cropW) / 2;
+    final top = (imgH - cropH) / 2;
+    return Rect.fromLTWH(left, top, cropW, cropH);
+  }
+
+  double? get _numericAspectRatio => switch (config.aspectRatio) {
+        AspectRatio.original => null,
+        AspectRatio.square => 1.0,
+        AspectRatio.fourFive => 4.0 / 5.0,
+        AspectRatio.threeFour => 3.0 / 4.0,
+        AspectRatio.sixteenNine => 16.0 / 9.0,
+        AspectRatio.nineSixteen => 9.0 / 16.0,
+      };
 
   void paintWatermark(Canvas canvas, Size totalSize) {
     if (watermark == null) return;
@@ -75,10 +104,10 @@ abstract class FramePainter extends CustomPainter {
         FrameWeight.thick => 0.08,
       };
 
-  Size get imageSize => Size(
-        image.width.toDouble(),
-        image.height.toDouble(),
-      );
+  Size get imageSize {
+    final src = _croppedSourceRect();
+    return Size(src.width, src.height);
+  }
 
   String get _fontFamily => config.fontFamily.name;
 

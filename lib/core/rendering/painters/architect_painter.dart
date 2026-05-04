@@ -13,204 +13,95 @@ class ArchitectPainter extends FramePainter {
     super.cameraLogo,
   });
 
-  double get _padding =>
-      imageSize.width * frameWeightMultiplier;
+  static const _bgColor = ui.Color(0xFF0A0A0A);
+  static const _red = ui.Color(0xFFEF4444);
+  static const _redDim = ui.Color(0x4DEF4444);
+  static const _redBg = ui.Color(0x0DEF4444);
 
-  double get _panelHeight => imageSize.width * 0.09;
+  double get _padding => imageSize.width * 0.04;
+  double get _hudHeight => imageSize.width * 0.10;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding =
-        imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.09;
+    final padding = imageSize.width * 0.04;
+    final hudHeight = imageSize.width * 0.10;
     return Size(
       imageSize.width + (padding * 2),
-      imageSize.height + (padding * 2) + panelHeight,
+      imageSize.height + (padding * 2) + hudHeight,
     );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
+
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = _bgColor,
+    );
+
     final photoRect = Rect.fromLTWH(
       _padding,
       _padding,
       imageSize.width,
       imageSize.height,
     );
-    final panelRect = Rect.fromLTWH(
-      _padding,
-      photoRect.bottom,
-      imageSize.width,
-      _panelHeight,
-    );
-
-    final blueprint = ui.Color.lerp(
-          config.backgroundColor,
-          const ui.Color(0xFF0C1E3A),
-          0.8,
-        ) ??
-        config.backgroundColor;
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = blueprint,
-    );
-
     paintPhoto(canvas, photoRect);
+
     _paintGridOverlay(canvas, photoRect);
-    _paintCornerCrosshair(canvas, photoRect);
-    paintInfoPanel(canvas, panelRect);
+    _paintViewfinderCorners(canvas, photoRect);
+    _paintCrosshair(canvas, photoRect);
+
+    final hudRect = Rect.fromLTWH(
+      _padding,
+      photoRect.bottom + (_padding * 0.3),
+      imageSize.width,
+      _hudHeight,
+    );
+    _paintHud(canvas, hudRect);
     paintWatermark(canvas, totalSize);
   }
 
-  @override
-  void paintInfoPanel(Canvas canvas, Rect panelRect) {
-    final fields = visibleFields;
-    if (fields.isEmpty) return;
-
-    final inset = imageSize.width * 0.015;
-    final centerY =
-        panelRect.top + (panelRect.height / 2);
-
-    // Camera logo on the far right.
-    final logoHeight = _panelHeight * 0.5;
-    final logoW = cameraLogoWidth(
-      maxHeight: logoHeight,
-    );
-    if (logoW > 0) {
-      paintCameraLogo(
-        canvas,
-        offset: Offset(
-          panelRect.right - inset - logoW,
-          centerY - (logoHeight / 2),
-        ),
-        maxHeight: logoHeight,
-        tintColor: config.accentColor,
-      );
-    }
-
-    // Left side: all fields in bracketed format,
-    // excluding Camera (shown separately on right).
-    final camera = fields
-        .where((f) => f.$1 == 'Camera')
-        .map((f) => f.$2)
-        .firstOrNull;
-
-    final bits = fields
-        .where((f) => f.$1 != 'Camera')
-        .map((f) => '[${f.$2}]')
-        .join(' ');
-
-    if (bits.isNotEmpty) {
-      final tp = buildTextPainter(
-        bits,
-        fontSize: imageSize.width * 0.014,
-        color: config.textColor,
-        maxWidth: panelRect.width - (inset * 2),
-      );
-      tp.paint(
-        canvas,
-        Offset(
-          panelRect.left + inset,
-          centerY - (tp.height / 2),
-        ),
-      );
-    }
-
-    // Camera name on the right (before logo).
-    if (camera != null && camera.isNotEmpty) {
-      final rightEdge = logoW > 0
-          ? panelRect.right - inset - logoW - inset
-          : panelRect.right - inset;
-      final cameraTp = buildTextPainter(
-        camera,
-        fontSize: imageSize.width * 0.012,
-        color: config.accentColor,
-        textAlign: TextAlign.right,
-        maxWidth: panelRect.width * 0.35,
-      );
-      cameraTp.paint(
-        canvas,
-        Offset(
-          rightEdge - cameraTp.width,
-          centerY - (cameraTp.height / 2),
-        ),
-      );
-    }
-  }
-
-  void _paintGridOverlay(
-    Canvas canvas,
-    Rect photoRect,
-  ) {
+  void _paintGridOverlay(Canvas canvas, Rect rect) {
     final paint = Paint()
-      ..color = ui.Color.fromARGB(110, 255, 255, 255)
+      ..color = const ui.Color(0x26FFFFFF)
       ..strokeWidth = 1;
-    final thirdX = photoRect.width / 3;
-    final thirdY = photoRect.height / 3;
+    final stepX = rect.width / 10;
+    final stepY = rect.height / 10;
 
-    for (var i = 1; i <= 2; i++) {
-      final x = photoRect.left + (thirdX * i);
-      final y = photoRect.top + (thirdY * i);
+    for (var i = 1; i < 10; i++) {
       canvas.drawLine(
-        Offset(x, photoRect.top),
-        Offset(x, photoRect.bottom),
+        Offset(rect.left + stepX * i, rect.top),
+        Offset(rect.left + stepX * i, rect.bottom),
         paint,
       );
       canvas.drawLine(
-        Offset(photoRect.left, y),
-        Offset(photoRect.right, y),
+        Offset(rect.left, rect.top + stepY * i),
+        Offset(rect.right, rect.top + stepY * i),
         paint,
       );
     }
   }
 
-  void _paintCornerCrosshair(
+  void _paintViewfinderCorners(
     Canvas canvas,
-    Rect photoRect,
+    Rect rect,
   ) {
-    final len = imageSize.width * 0.02;
-    final markerColor = ui.Color.lerp(
-          config.accentColor,
-          const ui.Color(0xFFFFFFFF),
-          0.2,
-        ) ??
-        config.accentColor;
+    final len = imageSize.width * 0.03;
     final paint = Paint()
-      ..color = markerColor
-      ..strokeWidth = 1.5;
+      ..color = _red
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
 
+    _drawCorner(canvas, rect.topLeft, len, 1, 1, paint);
     _drawCorner(
-      canvas,
-      photoRect.topLeft,
-      len,
-      true,
-      true,
-      paint,
+      canvas, rect.topRight, len, -1, 1, paint,
     );
     _drawCorner(
-      canvas,
-      photoRect.topRight,
-      len,
-      false,
-      true,
-      paint,
+      canvas, rect.bottomLeft, len, 1, -1, paint,
     );
     _drawCorner(
-      canvas,
-      photoRect.bottomLeft,
-      len,
-      true,
-      false,
-      paint,
-    );
-    _drawCorner(
-      canvas,
-      photoRect.bottomRight,
-      len,
-      false,
-      false,
-      paint,
+      canvas, rect.bottomRight, len, -1, -1, paint,
     );
   }
 
@@ -218,12 +109,10 @@ class ArchitectPainter extends FramePainter {
     Canvas canvas,
     Offset point,
     double len,
-    bool left,
-    bool top,
+    int xDir,
+    int yDir,
     Paint paint,
   ) {
-    final xDir = left ? 1 : -1;
-    final yDir = top ? 1 : -1;
     canvas.drawLine(
       point,
       Offset(point.dx + (len * xDir), point.dy),
@@ -234,5 +123,125 @@ class ArchitectPainter extends FramePainter {
       Offset(point.dx, point.dy + (len * yDir)),
       paint,
     );
+  }
+
+  void _paintCrosshair(Canvas canvas, Rect rect) {
+    final center = rect.center;
+    final armLen = imageSize.width * 0.025;
+    final paint = Paint()
+      ..color = _red.withValues(alpha: 0.5)
+      ..strokeWidth = 1;
+
+    canvas.drawLine(
+      Offset(center.dx - armLen, center.dy),
+      Offset(center.dx + armLen, center.dy),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(center.dx, center.dy - armLen),
+      Offset(center.dx, center.dy + armLen),
+      paint,
+    );
+  }
+
+  void _paintHud(Canvas canvas, Rect hudRect) {
+    final fields = visibleFields;
+    final camera = _findValue(fields, 'Camera');
+    final focal = _findValue(fields, 'Focal Length');
+    final aperture = _findValue(fields, 'Aperture');
+    final shutter = _findValue(fields, 'Shutter');
+    final iso = _findValue(fields, 'ISO');
+
+    final cells = [
+      ('CAM', camera),
+      ('LENS', focal),
+      ('EXP', '$aperture $shutter'.trim()),
+      ('ISO', iso),
+    ];
+
+    final gap = imageSize.width * 0.005;
+    final cellWidth =
+        (hudRect.width - (gap * 3)) / 4;
+    final cellHeight = hudRect.height;
+
+    final labelSize = imageSize.width * 0.022;
+    final valueSize = imageSize.width * 0.025;
+
+    for (var i = 0; i < cells.length; i++) {
+      final x = hudRect.left + (i * (cellWidth + gap));
+      final cellRect = Rect.fromLTWH(
+        x,
+        hudRect.top,
+        cellWidth,
+        cellHeight,
+      );
+
+      canvas.drawRect(cellRect, Paint()..color = _redBg);
+      canvas.drawRect(
+        cellRect,
+        Paint()
+          ..color = _redDim
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+
+      final labelTp = TextPainter(
+        text: TextSpan(
+          text: cells[i].$1,
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: labelSize,
+            color: _red.withValues(alpha: 0.6),
+            letterSpacing: labelSize * 0.2,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: cellWidth);
+
+      labelTp.paint(
+        canvas,
+        Offset(
+          cellRect.center.dx - labelTp.width / 2,
+          cellRect.top + cellHeight * 0.15,
+        ),
+      );
+
+      final valueTp = TextPainter(
+        text: TextSpan(
+          text: cells[i].$2.toUpperCase(),
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: valueSize,
+            fontWeight: FontWeight.w700,
+            color: _red,
+            letterSpacing: valueSize * 0.05,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: cellWidth - 4);
+
+      valueTp.paint(
+        canvas,
+        Offset(
+          cellRect.center.dx - valueTp.width / 2,
+          cellRect.center.dy,
+        ),
+      );
+    }
+  }
+
+  @override
+  void paintInfoPanel(Canvas canvas, Rect panelRect) {}
+
+  String _findValue(
+    List<(String, String)> fields,
+    String label,
+  ) {
+    for (final entry in fields) {
+      if (entry.$1 == label) return entry.$2;
+    }
+    return '';
   }
 }

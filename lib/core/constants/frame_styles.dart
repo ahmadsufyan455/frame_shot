@@ -11,6 +11,8 @@ abstract final class FrameStyles {
     minimalLine,
     fujifilmSim,
     architect,
+    polaroid,
+    editorial,
   ];
 
   static const classic = FrameStyle(
@@ -20,7 +22,11 @@ abstract final class FrameStyles {
         'White bottom bar, camera icon left, '
         'metadata right. Clean and minimal.',
     tier: FrameTier.free,
-    defaultConfig: FrameConfig(),
+    defaultConfig: FrameConfig(
+      backgroundColor: Color(0xFFFFFFFF),
+      textColor: Color(0xFF000000),
+      accentColor: Color(0xFF737373),
+    ),
     thumbnailAsset:
         'assets/thumbnails/classic.png',
   );
@@ -33,9 +39,9 @@ abstract final class FrameStyles {
         'film-inspired layout.',
     tier: FrameTier.pro,
     defaultConfig: FrameConfig(
-      backgroundColor: Color(0xFF0A0A0A),
-      textColor: Color(0xFFE0E0E0),
-      accentColor: Color(0xFF888888),
+      backgroundColor: Color(0xFF000000),
+      textColor: Color(0xFF9CA3AF),
+      accentColor: Color(0xFF9CA3AF),
       fontFamily: FrameFontFamily.mono,
     ),
     thumbnailAsset:
@@ -51,9 +57,9 @@ abstract final class FrameStyles {
     tier: FrameTier.pro,
     defaultConfig: FrameConfig(
       backgroundColor: Color(0xFF1A1A1A),
-      textColor: Color(0xFFF5E6C8),
-      accentColor: Color(0xFFD4A853),
-      fontFamily: FrameFontFamily.serif,
+      textColor: Color(0xFFF2CB05),
+      accentColor: Color(0xFFF2CB05),
+      fontFamily: FrameFontFamily.mono,
     ),
     thumbnailAsset:
         'assets/thumbnails/film_border.png',
@@ -63,13 +69,13 @@ abstract final class FrameStyles {
     id: FrameStyleId.minimalLine,
     name: 'Minimal Line',
     description:
-        'Single hairline border, bottom-center '
-        'metadata strip, no icons.',
+        'Floating pill overlay with metadata, '
+        'inner hairline border, clean white frame.',
     tier: FrameTier.pro,
     defaultConfig: FrameConfig(
-      backgroundColor: Color(0xFFFAFAFA),
-      textColor: Color(0xFF333333),
-      accentColor: Color(0xFFAAAAAA),
+      backgroundColor: Color(0xFFFFFFFF),
+      textColor: Color(0xFF000000),
+      accentColor: Color(0x80FFFFFF),
       fontFamily: FrameFontFamily.sans,
       frameWeight: FrameWeight.thin,
     ),
@@ -99,16 +105,50 @@ abstract final class FrameStyles {
     id: FrameStyleId.architect,
     name: 'Architect',
     description:
-        'Grid lines, technical-looking data layout, '
-        'inspired by camera viewfinder overlays.',
+        'Grid lines, red viewfinder corners, '
+        '4-column HUD data panel.',
     tier: FrameTier.pro,
     defaultConfig: FrameConfig(
-      backgroundColor: Color(0xFF1E2A38),
-      textColor: Color(0xFF00E5FF),
-      accentColor: Color(0xFF4DD0E1),
+      backgroundColor: Color(0xFF0A0A0A),
+      textColor: Color(0xFFEF4444),
+      accentColor: Color(0xFFEF4444),
       fontFamily: FrameFontFamily.mono,
     ),
     thumbnailAsset:
         'assets/thumbnails/architect.png',
+  );
+
+  static const polaroid = FrameStyle(
+    id: FrameStyleId.polaroid,
+    name: 'Polaroid',
+    description:
+        'Instant film aesthetic with slight rotation, '
+        'paper texture background, and handwritten feel.',
+    tier: FrameTier.pro,
+    defaultConfig: FrameConfig(
+      backgroundColor: Color(0xFFE2E0DB),
+      textColor: Color(0xFF525252),
+      accentColor: Color(0xFF737373),
+      fontFamily: FrameFontFamily.serif,
+    ),
+    thumbnailAsset:
+        'assets/thumbnails/polaroid.png',
+  );
+
+  static const editorial = FrameStyle(
+    id: FrameStyleId.editorial,
+    name: 'Editorial',
+    description:
+        'Clean white magazine layout with centered '
+        'brand name and minimal metadata strip.',
+    tier: FrameTier.pro,
+    defaultConfig: FrameConfig(
+      backgroundColor: Color(0xFFFFFFFF),
+      textColor: Color(0xFF000000),
+      accentColor: Color(0xFF737373),
+      fontFamily: FrameFontFamily.serif,
+    ),
+    thumbnailAsset:
+        'assets/thumbnails/editorial.png',
   );
 }

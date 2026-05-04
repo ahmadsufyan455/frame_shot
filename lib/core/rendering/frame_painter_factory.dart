@@ -7,9 +7,11 @@ import 'frame_painter.dart';
 import 'painters/architect_painter.dart';
 import 'painters/classic_painter.dart';
 import 'painters/darkroom_painter.dart';
+import 'painters/editorial_painter.dart';
 import 'painters/film_border_painter.dart';
 import 'painters/fujifilm_sim_painter.dart';
 import 'painters/minimal_line_painter.dart';
+import 'painters/polaroid_painter.dart';
 
 abstract final class FramePainterFactory {
   static FramePainter create({
@@ -59,6 +61,20 @@ abstract final class FramePainterFactory {
           cameraLogo: cameraLogo,
         ),
       FrameStyleId.architect => ArchitectPainter(
+          image: image,
+          exif: exif,
+          config: config,
+          watermark: watermark,
+          cameraLogo: cameraLogo,
+        ),
+      FrameStyleId.polaroid => PolaroidPainter(
+          image: image,
+          exif: exif,
+          config: config,
+          watermark: watermark,
+          cameraLogo: cameraLogo,
+        ),
+      FrameStyleId.editorial => EditorialPainter(
           image: image,
           exif: exif,
           config: config,

@@ -13,14 +13,17 @@ class DarkroomPainter extends FramePainter {
     super.cameraLogo,
   });
 
-  double get _padding => imageSize.width * frameWeightMultiplier * 1.2;
+  static const _bgColor = ui.Color(0xFF000000);
+  static const _innerBg = ui.Color(0xFF18181B);
+  static const _textColor = ui.Color(0xFF9CA3AF);
 
-  double get _panelHeight => imageSize.width * 0.18;
+  double get _padding => imageSize.width * 0.04;
+  double get _panelHeight => imageSize.width * 0.12;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding = imageSize.width * frameWeightMultiplier * 1.2;
-    final panelHeight = imageSize.width * 0.18;
+    final padding = imageSize.width * 0.04;
+    final panelHeight = imageSize.width * 0.12;
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2) + panelHeight,
@@ -30,39 +33,36 @@ class DarkroomPainter extends FramePainter {
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
-    final photoRect = Rect.fromLTWH(
+
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = _bgColor,
+    );
+
+    final innerRect = Rect.fromLTWH(
       _padding,
       _padding,
       imageSize.width,
       imageSize.height,
     );
+    canvas.drawRect(innerRect, Paint()..color = _innerBg);
+
+    final photoScale = 0.90;
+    final photoW = imageSize.width * photoScale;
+    final photoH = imageSize.height * photoScale;
+    final photoRect = Rect.fromCenter(
+      center: innerRect.center,
+      width: photoW,
+      height: photoH,
+    );
+    paintPhoto(canvas, photoRect);
+
     final panelRect = Rect.fromLTWH(
       _padding,
-      photoRect.bottom,
+      innerRect.bottom + (_padding * 0.5),
       imageSize.width,
       _panelHeight,
     );
-
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = config.backgroundColor,
-    );
-
-    final borderColor = ui.Color.fromARGB(180, 255, 255, 255);
-    canvas.drawRect(
-      Rect.fromLTWH(
-        _padding * 0.5,
-        _padding * 0.5,
-        totalSize.width - _padding,
-        totalSize.height - _padding,
-      ),
-      Paint()
-        ..color = borderColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = imageSize.width * 0.003,
-    );
-
-    paintPhoto(canvas, photoRect);
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
   }
@@ -72,49 +72,96 @@ class DarkroomPainter extends FramePainter {
     final fields = visibleFields;
     if (fields.isEmpty) return;
 
-    final textSize = imageSize.width * 0.014;
-    final rowGap = textSize * 0.6;
-    final inset = imageSize.width * 0.018;
-    final colWidth =
-        (panelRect.width - (inset * 3)) / 2;
+    final fontSize = imageSize.width * 0.028;
+    final lineGap = fontSize * 0.6;
+    final inset = imageSize.width * 0.015;
 
-    // Camera logo at top-right corner.
-    final logoHeight = textSize * 2.5;
-    final logoW = cameraLogoWidth(
-      maxHeight: logoHeight,
-    );
-    if (logoW > 0) {
-      paintCameraLogo(
+    final camera = _findValue(fields, 'Camera');
+    final lens = _findValue(fields, 'Lens');
+    final focal = _findValue(fields, 'Focal Length');
+    final aperture = _findValue(fields, 'Aperture');
+    final shutter = _findValue(fields, 'Shutter');
+    final iso = _findValue(fields, 'ISO');
+
+    final topY = panelRect.top + inset;
+    final bottomY = topY + fontSize + lineGap;
+
+    if (camera.isNotEmpty) {
+      _paintMono(
         canvas,
-        offset: Offset(
-          panelRect.right - inset - logoW,
-          panelRect.top + inset,
-        ),
-        maxHeight: logoHeight,
-        tintColor: config.textColor,
+        camera,
+        fontSize,
+        Offset(panelRect.left + inset, topY),
+      );
+    }
+    if (lens.isNotEmpty) {
+      _paintMono(
+        canvas,
+        lens,
+        fontSize,
+        Offset(panelRect.left + inset, bottomY),
       );
     }
 
-    var row = 0;
-    for (var i = 0; i < fields.length; i++) {
-      final col = i % 2;
-      if (col == 0 && i > 0) row++;
-      final x = panelRect.left +
-          inset +
-          (col * (colWidth + inset));
-      final y = panelRect.top +
-          inset +
-          (row * (textSize + rowGap));
-      final line =
-          '${fields[i].$1.toUpperCase()}: '
-          '${fields[i].$2}';
-      final tp = buildTextPainter(
-        line,
-        fontSize: textSize,
-        color: config.textColor,
-        maxWidth: colWidth,
+    final rightParts = [focal, aperture, shutter]
+        .where((s) => s.isNotEmpty)
+        .join(' \u2022 ');
+
+    if (rightParts.isNotEmpty) {
+      final tp = _buildMono(rightParts, fontSize);
+      tp.paint(
+        canvas,
+        Offset(
+          panelRect.right - inset - tp.width,
+          topY,
+        ),
       );
-      tp.paint(canvas, Offset(x, y));
     }
+    if (iso.isNotEmpty) {
+      final tp = _buildMono(iso, fontSize);
+      tp.paint(
+        canvas,
+        Offset(
+          panelRect.right - inset - tp.width,
+          bottomY,
+        ),
+      );
+    }
+  }
+
+  void _paintMono(
+    Canvas canvas,
+    String text,
+    double fontSize,
+    Offset offset,
+  ) {
+    final tp = _buildMono(text, fontSize);
+    tp.paint(canvas, offset);
+  }
+
+  TextPainter _buildMono(String text, double fontSize) {
+    return TextPainter(
+      text: TextSpan(
+        text: text.toUpperCase(),
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: fontSize,
+          color: _textColor,
+          fontWeight: FontWeight.w400,
+          letterSpacing: fontSize * 0.12,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: imageSize.width * 0.48);
+  }
+
+  String _findValue(
+    List<(String, String)> fields,
+    String label,
+  ) {
+    for (final entry in fields) {
+      if (entry.$1 == label) return entry.$2;
+    }
+    return '';
   }
 }

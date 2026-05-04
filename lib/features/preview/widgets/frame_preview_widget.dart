@@ -47,19 +47,45 @@ class FramePreviewWidget extends ConsumerWidget {
         );
 
         final totalSize = painter.calculateTotalSize(
-          Size(
-            image.width.toDouble(),
-            image.height.toDouble(),
-          ),
+          painter.imageSize,
         );
 
-        return RepaintBoundary(
-          child: FittedBox(
-            child: CustomPaint(
-              size: totalSize,
-              painter: painter,
-            ),
-          ),
+        final frameRatio =
+            totalSize.width / totalSize.height;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final maxW = constraints.maxWidth;
+            final maxH = constraints.maxHeight;
+
+            double w, h;
+            if (maxW / maxH > frameRatio) {
+              h = maxH;
+              w = maxH * frameRatio;
+            } else {
+              w = maxW;
+              h = maxW / frameRatio;
+            }
+
+            return Center(
+              child: AnimatedContainer(
+                duration: const Duration(
+                  milliseconds: 300,
+                ),
+                curve: Curves.easeInOut,
+                width: w,
+                height: h,
+                child: RepaintBoundary(
+                  child: FittedBox(
+                    child: CustomPaint(
+                      size: totalSize,
+                      painter: painter,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
       loading: () => const Center(

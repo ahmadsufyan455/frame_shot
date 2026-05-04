@@ -7,6 +7,8 @@ enum FrameStyleId {
   minimalLine,
   fujifilmSim,
   architect,
+  polaroid,
+  editorial,
 }
 
 enum FrameTier { free, pro }

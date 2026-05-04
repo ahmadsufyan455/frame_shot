@@ -13,16 +13,17 @@ class FujifilmSimPainter extends FramePainter {
     super.cameraLogo,
   });
 
-  double get _padding =>
-      imageSize.width * frameWeightMultiplier;
+  static const _bgColor = ui.Color(0xFFF2EFE9);
+  static const _cardColor = ui.Color(0xFFFFFFFF);
+  static const _textColor = ui.Color(0xFF1E3A3A);
 
-  double get _panelHeight => imageSize.width * 0.2;
+  double get _padding => imageSize.width * 0.08;
+  double get _panelHeight => imageSize.width * 0.08;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding =
-        imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.2;
+    final padding = imageSize.width * 0.08;
+    final panelHeight = imageSize.width * 0.08;
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2) + panelHeight,
@@ -32,45 +33,36 @@ class FujifilmSimPainter extends FramePainter {
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
-    final photoRect = Rect.fromLTWH(
+
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = _bgColor,
+    );
+
+    final cardRect = Rect.fromLTWH(
       _padding,
       _padding,
       imageSize.width,
       imageSize.height,
     );
+
+    final shadowPaint = Paint()
+      ..color = const ui.Color(0x22000000)
+      ..maskFilter = const MaskFilter.blur(
+        BlurStyle.normal,
+        8,
+      );
+    canvas.drawRect(cardRect.inflate(2), shadowPaint);
+    canvas.drawRect(cardRect, Paint()..color = _cardColor);
+
+    paintPhoto(canvas, cardRect);
+
     final panelRect = Rect.fromLTWH(
       _padding,
-      photoRect.bottom,
+      cardRect.bottom + (_padding * 0.6),
       imageSize.width,
       _panelHeight,
     );
-
-    final cream = ui.Color.lerp(
-          config.backgroundColor,
-          const ui.Color(0xFFF7F2E9),
-          0.8,
-        ) ??
-        config.backgroundColor;
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = cream,
-    );
-
-    paintPhoto(canvas, photoRect);
-
-    final card = RRect.fromRectAndRadius(
-      panelRect.deflate(imageSize.width * 0.008),
-      Radius.circular(imageSize.width * 0.01),
-    );
-    final panelColor =
-        ui.Color.lerp(
-          cream,
-          const ui.Color(0xFFDAF1EC),
-          0.28,
-        ) ??
-        cream;
-    canvas.drawRRect(card, Paint()..color = panelColor);
-
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
   }
@@ -78,68 +70,83 @@ class FujifilmSimPainter extends FramePainter {
   @override
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
-    if (fields.isEmpty) return;
+    final fontSize = imageSize.width * 0.038;
+    final centerY =
+        panelRect.top + (panelRect.height - fontSize) / 2;
 
-    final insetX = imageSize.width * 0.022;
-    final insetY = imageSize.width * 0.015;
-    final textSize = imageSize.width * 0.0135;
-    final lineHeight = textSize * 1.4;
+    final camera = _findValue(fields, 'Camera');
+    final focal = _findValue(fields, 'Focal Length');
 
-    // Camera logo at top-right of panel.
-    final logoHeight = textSize * 2;
-    final logoW = cameraLogoWidth(
-      maxHeight: logoHeight,
-    );
-    if (logoW > 0) {
-      paintCameraLogo(
-        canvas,
-        offset: Offset(
-          panelRect.right - insetX - logoW,
-          panelRect.top + insetY,
+    if (camera.isNotEmpty) {
+      final leftTp = TextPainter(
+        text: TextSpan(
+          text: camera,
+          style: TextStyle(
+            fontFamily: 'serif',
+            fontSize: fontSize,
+            fontStyle: FontStyle.italic,
+            color: _textColor,
+          ),
         ),
-        maxHeight: logoHeight,
-        tintColor: config.textColor,
+        textDirection: TextDirection.ltr,
+      )..layout();
+      leftTp.paint(
+        canvas,
+        Offset(panelRect.left, centerY),
       );
     }
 
-    var row = 0;
-    for (final field in fields) {
-      final leader = _leaderDots(
-        field.$1,
-        field.$2,
-        30,
-      );
-      final line = '${field.$1}$leader${field.$2}';
-      final tp = buildTextPainter(
-        line,
-        fontSize: textSize,
-        color: config.textColor,
-        maxWidth: panelRect.width - (insetX * 2),
-      );
-      tp.paint(
+    final centerTp = TextPainter(
+      text: TextSpan(
+        text: 'Classic Chrome',
+        style: TextStyle(
+          fontFamily: 'serif',
+          fontSize: fontSize,
+          fontStyle: FontStyle.italic,
+          color: _textColor,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    centerTp.paint(
+      canvas,
+      Offset(
+        panelRect.left +
+            (panelRect.width - centerTp.width) / 2,
+        centerY,
+      ),
+    );
+
+    if (focal.isNotEmpty) {
+      final rightTp = TextPainter(
+        text: TextSpan(
+          text: focal,
+          style: TextStyle(
+            fontFamily: 'serif',
+            fontSize: fontSize,
+            fontStyle: FontStyle.italic,
+            color: _textColor,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      rightTp.paint(
         canvas,
         Offset(
-          panelRect.left + insetX,
-          panelRect.top + insetY + (row * lineHeight),
+          panelRect.right - rightTp.width,
+          centerY,
         ),
       );
-      row++;
-      if (panelRect.top +
-              insetY +
-              (row * lineHeight) >
-          panelRect.bottom - textSize) {
-        break;
-      }
     }
   }
 
-  String _leaderDots(
-    String left,
-    String right,
-    int width,
+  String _findValue(
+    List<(String, String)> fields,
+    String label,
   ) {
-    final dots = width - left.length - right.length;
-    if (dots <= 2) return '  ';
-    return ' ${'.' * dots} ';
+    for (final entry in fields) {
+      if (entry.$1 == label) return entry.$2;
+    }
+    return '';
   }
 }

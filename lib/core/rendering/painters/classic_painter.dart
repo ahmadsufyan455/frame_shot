@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/rendering.dart';
 
 import '../frame_painter.dart';
@@ -11,60 +13,58 @@ class ClassicPainter extends FramePainter {
     super.cameraLogo,
   });
 
-  double get _padding =>
-      imageSize.width * frameWeightMultiplier;
+  static const _bgColor = ui.Color(0xFFFFFFFF);
+  static const _photoBg = ui.Color(0xFFF5F5F5);
+  static const _textPrimary = ui.Color(0xFF000000);
+  static const _textSecondary = ui.Color(0xFF737373);
 
-  double get _infoPanelHeight =>
-      imageSize.width * 0.08;
+  double get _padding => imageSize.width * 0.03;
+  double get _panelHeight => imageSize.width * 0.10;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final padding =
-        imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.08;
+    final padding = imageSize.width * 0.03;
+    final panelHeight = imageSize.width * 0.10;
+    final gap = imageSize.width * 0.025;
     return Size(
       imageSize.width + (padding * 2),
-      imageSize.height + (padding * 2) + panelHeight,
+      imageSize.height + (padding * 2) + gap + panelHeight,
     );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
+
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = _bgColor,
+    );
+
     final photoRect = Rect.fromLTWH(
       _padding,
       _padding,
       imageSize.width,
       imageSize.height,
     );
+
+    final photoRRect = RRect.fromRectAndRadius(
+      photoRect,
+      const Radius.circular(2),
+    );
+    canvas.drawRRect(photoRRect, Paint()..color = _photoBg);
+    canvas.save();
+    canvas.clipRRect(photoRRect);
+    paintPhoto(canvas, photoRect);
+    canvas.restore();
+
+    final gap = imageSize.width * 0.025;
     final panelRect = Rect.fromLTWH(
       _padding,
-      photoRect.bottom,
+      photoRect.bottom + gap,
       imageSize.width,
-      _infoPanelHeight,
+      _panelHeight,
     );
-
-    canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = config.backgroundColor,
-    );
-
-    final separatorColor = Color.lerp(
-          config.accentColor,
-          config.backgroundColor,
-          0.5,
-        ) ??
-        config.accentColor;
-
-    canvas.drawLine(
-      Offset(panelRect.left, panelRect.top),
-      Offset(panelRect.right, panelRect.top),
-      Paint()
-        ..color = separatorColor
-        ..strokeWidth = 1,
-    );
-
-    paintPhoto(canvas, photoRect);
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
   }
@@ -74,91 +74,125 @@ class ClassicPainter extends FramePainter {
     final fields = visibleFields;
     if (fields.isEmpty) return;
 
-    final bodySize = imageSize.width * 0.015;
-    final inset = imageSize.width * 0.015;
-    final logoHeight = _infoPanelHeight * 0.5;
-
-    // -- Left side: camera logo + camera name --
-    var leftX = panelRect.left + inset;
+    final inset = imageSize.width * 0.01;
     final centerY =
         panelRect.top + (panelRect.height / 2);
+    final bodySize = imageSize.width * 0.038;
+    final smallSize = imageSize.width * 0.032;
 
-    // Paint camera logo if enabled.
-    final logoW = cameraLogoWidth(
-      maxHeight: logoHeight,
-    );
+    final logoHeight = panelRect.height * 0.55;
+    var leftX = panelRect.left + inset;
+
+    final logoW = cameraLogoWidth(maxHeight: logoHeight);
     if (logoW > 0) {
       paintCameraLogo(
         canvas,
-        offset: Offset(
-          leftX,
-          centerY - (logoHeight / 2),
-        ),
+        offset: Offset(leftX, centerY - logoHeight / 2),
         maxHeight: logoHeight,
-        tintColor: config.textColor,
+        tintColor: _textPrimary,
       );
-      leftX += logoW + (inset * 0.5);
+      leftX += logoW + (inset * 1.5);
+    } else {
+      final circleR = logoHeight * 0.5;
+      final circleCenter = Offset(
+        leftX + circleR,
+        centerY,
+      );
+      canvas.drawCircle(
+        circleCenter,
+        circleR,
+        Paint()..color = _photoBg,
+      );
+      leftX += circleR * 2 + (inset * 1.5);
     }
 
-    // Camera name on the left.
     final camera = _findValue(fields, 'Camera');
-    if (camera.isNotEmpty) {
-      final cameraTp = buildTextPainter(
-        camera,
-        fontSize: bodySize,
-        color: config.textColor,
-        fontWeight: FontWeight.w600,
-        maxWidth: panelRect.width * 0.4,
-      );
-      cameraTp.paint(
+    final lens = _findValue(fields, 'Lens');
+
+    if (camera.isNotEmpty || lens.isNotEmpty) {
+      final spans = <TextSpan>[
+        if (camera.isNotEmpty)
+          TextSpan(
+            text: camera,
+            style: TextStyle(
+              fontSize: bodySize,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
+            ),
+          ),
+        if (camera.isNotEmpty && lens.isNotEmpty)
+          const TextSpan(text: '\n'),
+        if (lens.isNotEmpty)
+          TextSpan(
+            text: lens,
+            style: TextStyle(
+              fontSize: smallSize,
+              color: _textSecondary,
+            ),
+          ),
+      ];
+
+      final tp = TextPainter(
+        text: TextSpan(children: spans),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: panelRect.width * 0.4);
+      tp.paint(
         canvas,
-        Offset(leftX, centerY - (cameraTp.height / 2)),
+        Offset(leftX, centerY - tp.height / 2),
       );
     }
 
-    // -- Right side: all settings joined by pipe --
-    final settingLabels = fields
-        .where((f) => f.$1 != 'Camera' && f.$1 != 'Date')
-        .map((f) => f.$2);
-    final settings = settingLabels.join(' | ');
+    final focal = _findValue(fields, 'Focal Length');
+    final aperture = _findValue(fields, 'Aperture');
+    final shutter = _findValue(fields, 'Shutter');
+    final iso = _findValue(fields, 'ISO');
 
-    if (settings.isNotEmpty) {
-      final settingsTp = buildTextPainter(
-        settings,
-        fontSize: bodySize,
-        color: config.textColor,
-        textAlign: TextAlign.right,
-        maxWidth: panelRect.width * 0.55,
-      );
-      settingsTp.paint(
+    final topRight = [focal, aperture]
+        .where((s) => s.isNotEmpty)
+        .join('   ');
+    final bottomRight = [shutter, iso]
+        .where((s) => s.isNotEmpty)
+        .join('   ');
+
+    final rightX = panelRect.right - inset;
+
+    if (topRight.isNotEmpty) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: topRight,
+          style: TextStyle(
+            fontSize: bodySize * 0.9,
+            fontWeight: FontWeight.w500,
+            color: _textPrimary,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(
         canvas,
         Offset(
-          panelRect.right - inset - settingsTp.width,
-          centerY - (settingsTp.height / 2),
+          rightX - tp.width,
+          centerY - tp.height - 1,
         ),
       );
     }
 
-    // -- Date below settings on the right --
-    final date = _findValue(fields, 'Date');
-    if (date.isEmpty) return;
-    final dateSize = imageSize.width * 0.012;
-    final dateTp = buildTextPainter(
-      date,
-      fontSize: dateSize,
-      color: config.accentColor,
-      textAlign: TextAlign.right,
-      maxWidth: panelRect.width * 0.42,
-    );
-    dateTp.paint(
-      canvas,
-      Offset(
-        panelRect.right - inset - dateTp.width,
-        panelRect.bottom -
-            dateTp.height -
-            (inset * 0.2),
-      ),
-    );
+    if (bottomRight.isNotEmpty) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: bottomRight,
+          style: TextStyle(
+            fontSize: smallSize,
+            color: _textSecondary,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(
+        canvas,
+        Offset(rightX - tp.width, centerY + 1),
+      );
+    }
   }
 
   String _findValue(

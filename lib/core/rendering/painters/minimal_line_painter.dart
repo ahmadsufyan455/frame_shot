@@ -13,115 +13,123 @@ class MinimalLinePainter extends FramePainter {
     super.cameraLogo,
   });
 
-  double get _padding {
-    final scaled =
-        imageSize.width * frameWeightMultiplier * 0.4;
-    final min = imageSize.width * 0.015;
-    return scaled < min ? min : scaled;
-  }
+  static const _bgColor = ui.Color(0xFFFFFFFF);
 
-  double get _panelHeight => imageSize.width * 0.06;
+  double get _padding => imageSize.width * 0.06;
 
   @override
   Size calculateTotalSize(Size imageSize) {
-    final scaled =
-        imageSize.width * frameWeightMultiplier * 0.4;
-    final min = imageSize.width * 0.015;
-    final padding = scaled < min ? min : scaled;
-    final panelHeight = imageSize.width * 0.06;
+    final padding = imageSize.width * 0.06;
     return Size(
       imageSize.width + (padding * 2),
-      imageSize.height + (padding * 2) + panelHeight,
+      imageSize.height + (padding * 2),
     );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final totalSize = calculateTotalSize(imageSize);
+
+    canvas.drawRect(
+      Offset.zero & totalSize,
+      Paint()..color = _bgColor,
+    );
+
     final photoRect = Rect.fromLTWH(
       _padding,
       _padding,
       imageSize.width,
       imageSize.height,
     );
-    final panelRect = Rect.fromLTWH(
-      _padding,
-      photoRect.bottom,
-      imageSize.width,
-      _panelHeight,
-    );
+    paintPhoto(canvas, photoRect);
 
+    final insetAmount = imageSize.width * 0.04;
+    final innerBorder = photoRect.deflate(insetAmount);
     canvas.drawRect(
-      Offset.zero & totalSize,
-      Paint()..color = config.backgroundColor,
-    );
-
-    canvas.drawRect(
-      photoRect,
+      innerBorder,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = ui.Color.lerp(
-              config.accentColor,
-              config.backgroundColor,
-              0.1,
-            ) ??
-            config.accentColor,
+        ..strokeWidth = 0.5
+        ..color = const ui.Color(0x80FFFFFF),
     );
 
-    paintPhoto(canvas, photoRect);
-    paintInfoPanel(canvas, panelRect);
+    _paintInfoPill(canvas, photoRect);
     paintWatermark(canvas, totalSize);
   }
 
-  @override
-  void paintInfoPanel(Canvas canvas, Rect panelRect) {
+  void _paintInfoPill(Canvas canvas, Rect photoRect) {
     final fields = visibleFields;
     if (fields.isEmpty) return;
 
-    // Join all visible field values with a dot
-    // separator.
-    final line =
-        fields.map((f) => f.$2).join(' \u00B7 ');
+    final camera = _findValue(fields, 'Camera');
+    final focal = _findValue(fields, 'Focal Length');
+    final aperture = _findValue(fields, 'Aperture');
 
-    final tp = buildTextPainter(
-      line,
-      fontSize: imageSize.width * 0.015,
-      color: config.textColor,
-      textAlign: TextAlign.center,
-      maxWidth: panelRect.width,
-    );
+    final parts = [camera, focal, aperture]
+        .where((s) => s.isNotEmpty)
+        .join(' \u2022 ');
+    if (parts.isEmpty) return;
 
-    final centerY =
-        panelRect.top +
-        (panelRect.height - tp.height) / 2;
-
-    // Camera logo on the left if enabled.
-    final logoHeight = _panelHeight * 0.55;
-    final logoW = cameraLogoWidth(
-      maxHeight: logoHeight,
-    );
-    final inset = imageSize.width * 0.015;
-
-    if (logoW > 0) {
-      paintCameraLogo(
-        canvas,
-        offset: Offset(
-          panelRect.left + inset,
-          centerY,
+    final fontSize = imageSize.width * 0.024;
+    final tp = TextPainter(
+      text: TextSpan(
+        text: parts.toUpperCase(),
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w600,
+          color: const ui.Color(0xCC000000),
+          letterSpacing: fontSize * 0.12,
         ),
-        maxHeight: logoHeight,
-        tintColor: config.textColor,
-      );
-    }
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: photoRect.width * 0.85);
+
+    final pillPadX = fontSize * 1.5;
+    final pillPadY = fontSize * 0.6;
+    final pillWidth = tp.width + (pillPadX * 2);
+    final pillHeight = tp.height + (pillPadY * 2);
+
+    final pillLeft =
+        photoRect.left + (photoRect.width - pillWidth) / 2;
+    final pillTop = photoRect.bottom -
+        (imageSize.width * 0.04) -
+        pillHeight;
+
+    final pillRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        pillLeft,
+        pillTop,
+        pillWidth,
+        pillHeight,
+      ),
+      Radius.circular(pillHeight / 2),
+    );
+
+    canvas.drawRRect(
+      pillRect,
+      Paint()..color = const ui.Color(0x99FFFFFF),
+    );
 
     tp.paint(
       canvas,
       Offset(
-        panelRect.left +
-            (panelRect.width - tp.width) / 2,
-        centerY,
+        pillLeft + pillPadX,
+        pillTop + pillPadY,
       ),
     );
+  }
+
+  @override
+  void paintInfoPanel(Canvas canvas, Rect panelRect) {}
+
+  String _findValue(
+    List<(String, String)> fields,
+    String label,
+  ) {
+    for (final entry in fields) {
+      if (entry.$1 == label) return entry.$2;
+    }
+    return '';
   }
 }
