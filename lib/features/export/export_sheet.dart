@@ -15,7 +15,10 @@ class ExportSheet extends ConsumerStatefulWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF171717),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => const ExportSheet(),
     );
   }
@@ -44,70 +47,51 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       }
     });
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 28 + bottomPadding),
-          decoration: const BoxDecoration(
-            color: Color(0xFF171717),
-            border: Border(top: BorderSide(color: Color(0xFF262626))),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 40,
-                offset: Offset(0, -12),
-              ),
-            ],
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 0, 24, 28 + bottomPadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _Header(onDone: () => Navigator.of(context).pop()),
+          const SizedBox(height: 24),
+          _FormatSection(
+            selected: _settings.format,
+            onChanged: (f) => setState(() {
+              _settings = _settings.copyWith(format: f);
+            }),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _Header(onDone: () => Navigator.of(context).pop()),
-              const SizedBox(height: 24),
-              _FormatSection(
-                selected: _settings.format,
-                onChanged: (f) => setState(() {
-                  _settings = _settings.copyWith(format: f);
-                }),
-              ),
-              if (_settings.format == ExportFormat.jpeg) ...[
-                const SizedBox(height: 20),
-                _QualitySection(
-                  value: _settings.jpegQuality,
-                  onChanged: (q) => setState(() {
-                    _settings = _settings.copyWith(jpegQuality: q);
-                  }),
-                ),
-              ],
-              const SizedBox(height: 20),
-              _ResolutionIndicator(
-                isPro: isPro,
-                onUpgrade: () {
-                  Navigator.of(context).pop();
-                  context.pushNamed('paywall');
-                },
-              ),
-              const SizedBox(height: 28),
-              _ActionButtons(
-                status: exportState.status,
-                lastAction: _lastAction,
-                onSave: () {
-                  _lastAction = _Action.save;
-                  ref.read(exportProvider.notifier).saveToGallery(_settings);
-                },
-                onShare: () {
-                  _lastAction = _Action.share;
-                  ref.read(exportProvider.notifier).shareToApp(_settings);
-                },
-              ),
-            ],
+          if (_settings.format == ExportFormat.jpeg) ...[
+            const SizedBox(height: 20),
+            _QualitySection(
+              value: _settings.jpegQuality,
+              onChanged: (q) => setState(() {
+                _settings = _settings.copyWith(jpegQuality: q);
+              }),
+            ),
+          ],
+          const SizedBox(height: 20),
+          _ResolutionIndicator(
+            isPro: isPro,
+            onUpgrade: () {
+              Navigator.of(context).pop();
+              context.pushNamed('paywall');
+            },
           ),
-        ),
+          const SizedBox(height: 28),
+          _ActionButtons(
+            status: exportState.status,
+            lastAction: _lastAction,
+            onSave: () {
+              _lastAction = _Action.save;
+              ref.read(exportProvider.notifier).saveToGallery(_settings);
+            },
+            onShare: () {
+              _lastAction = _Action.share;
+              ref.read(exportProvider.notifier).shareToApp(_settings);
+            },
+          ),
+        ],
       ),
     );
   }

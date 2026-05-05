@@ -27,7 +27,10 @@ class CustomizeSheet extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF171717),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (sheetContext) => CustomizeSheet(
         onAdvancedPressed: () {
           Navigator.of(sheetContext).pop();
@@ -45,7 +48,10 @@ class CustomizeSheet extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF171717),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => const _AdvancedCustomizeSheet(),
     );
   }
@@ -62,115 +68,95 @@ class CustomizeSheet extends ConsumerWidget {
     final styleId = ref.watch(selectedStyleProvider);
     final spec = FrameCustomizationSpecs.forStyle(styleId);
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 28 + bottomPadding),
-          decoration: const BoxDecoration(
-            color: Color(0xFF171717),
-            border: Border(top: BorderSide(color: Color(0xFF262626))),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 40,
-                offset: Offset(0, -12),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 0, 24, 28 + bottomPadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Pro Customization',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    height: 1.5,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFA1A1A1),
+                  minimumSize: const Size(48, 36),
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0,
+                  ),
+                ),
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+          const SizedBox(height: 24),
+          if (spec.supportsCameraLogo) ...[
+            _QuickControlRow(
+              label: 'Camera Logo',
+              trailing: _CompactSwitch(
+                value: showLogo,
+                onChanged: (value) => ref
+                    .read(frameConfigProvider.notifier)
+                    .toggleCameraLogo(value),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          _QuickControlRow(
+            label: 'Border Weight',
+            trailing: _FrameWeightPills(
+              selected: frameWeight,
+              onChanged: (value) =>
+                  ref.read(frameConfigProvider.notifier).setFrameWeight(value),
+            ),
+          ),
+          const SizedBox(height: 40),
+          GestureDetector(
+            onTap: onAdvancedPressed,
+            child: const Text.rich(
+              TextSpan(
+                text: 'More customization options available in ',
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'Pro Customization',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        height: 1.5,
-                        letterSpacing: 0,
-                      ),
+                  TextSpan(
+                    text: 'Advanced',
+                    style: TextStyle(
+                      color: Color(0xFF60A5FA),
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Color(0xFF60A5FA),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFA1A1A1),
-                      minimumSize: const Size(48, 36),
-                      padding: EdgeInsets.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'Done',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                  ),
+                  TextSpan(text: ' →'),
                 ],
               ),
-              const SizedBox(height: 24),
-              if (spec.supportsCameraLogo) ...[
-                _QuickControlRow(
-                  label: 'Camera Logo',
-                  trailing: _CompactSwitch(
-                    value: showLogo,
-                    onChanged: (value) => ref
-                        .read(frameConfigProvider.notifier)
-                        .toggleCameraLogo(value),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              _QuickControlRow(
-                label: 'Border Weight',
-                trailing: _FrameWeightPills(
-                  selected: frameWeight,
-                  onChanged: (value) => ref
-                      .read(frameConfigProvider.notifier)
-                      .setFrameWeight(value),
-                ),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                height: 1.35,
+                letterSpacing: 0,
+                color: Color(0xFFA1A1A1),
               ),
-              const SizedBox(height: 40),
-              GestureDetector(
-                onTap: onAdvancedPressed,
-                child: const Text.rich(
-                  TextSpan(
-                    text: 'More customization options available in ',
-                    children: [
-                      TextSpan(
-                        text: 'Advanced',
-                        style: TextStyle(
-                          color: Color(0xFF60A5FA),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xFF60A5FA),
-                        ),
-                      ),
-                      TextSpan(text: ' →'),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    height: 1.35,
-                    letterSpacing: 0,
-                    color: Color(0xFFA1A1A1),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -236,35 +222,28 @@ class _AdvancedCustomizeSheet extends ConsumerWidget {
       builder: (context, scrollController) {
         return Theme(
           data: advancedTheme,
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF171717),
-              border: Border(top: BorderSide(color: Color(0xFF262626))),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                children: [
-                  const _AdvancedHeader(),
-                  const SizedBox(height: 24),
-                  if (spec.supportsAccentColor ||
-                      spec.supportsBackgroundColor ||
-                      spec.supportsTextColor) ...[
-                    const _SectionHeader(title: 'Colors'),
-                    _StyleColorControls(spec: spec),
-                    const SizedBox(height: 20),
-                  ],
-                  const _SectionHeader(title: 'Show / Hide'),
-                  const FieldToggleList(),
+          child: SafeArea(
+            top: false,
+            child: ListView(
+              controller: scrollController,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              children: [
+                const _AdvancedHeader(),
+                const SizedBox(height: 24),
+                if (spec.supportsAccentColor ||
+                    spec.supportsBackgroundColor ||
+                    spec.supportsTextColor) ...[
+                  const _SectionHeader(title: 'Colors'),
+                  _StyleColorControls(spec: spec),
                   const SizedBox(height: 20),
-                  const _SectionHeader(title: 'Override Values'),
-                  const FieldOverrideList(),
-                  const SizedBox(height: 24),
                 ],
-              ),
+                const _SectionHeader(title: 'Show / Hide'),
+                const FieldToggleList(),
+                const SizedBox(height: 20),
+                const _SectionHeader(title: 'Override Values'),
+                const FieldOverrideList(),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
         );
