@@ -326,27 +326,12 @@ class _QuickControlRow extends StatelessWidget {
       ),
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 320) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              labelText,
-              const SizedBox(height: 10),
-              Align(alignment: Alignment.centerLeft, child: trailing),
-            ],
-          );
-        }
-
-        return Row(
-          children: [
-            Expanded(child: labelText),
-            const SizedBox(width: 16),
-            trailing,
-          ],
-        );
-      },
+    return Row(
+      children: [
+        Expanded(child: labelText),
+        const SizedBox(width: 16),
+        trailing,
+      ],
     );
   }
 }
