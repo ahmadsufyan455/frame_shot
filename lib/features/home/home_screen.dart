@@ -50,9 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
 
     // Reset style and config to defaults for each new import.
-    await ref.read(settingsProvider.notifier).setLastStyleId(
-      FrameStyleId.classic,
-    );
+    await ref
+        .read(settingsProvider.notifier)
+        .setLastStyleId(FrameStyleId.classic);
     ref.invalidate(selectedStyleProvider);
     ref.invalidate(frameConfigProvider);
 
@@ -110,13 +110,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 24,
+                offset: Offset(0, 12),
+              ),
+            ],
           ),
-          child: const Icon(
-            Icons.camera_alt_rounded,
-            color: Colors.black,
-            size: 40,
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(
+            'assets/icons/frame_shot_icon.png',
+            fit: BoxFit.cover,
           ),
         ),
         const SizedBox(height: 24),
