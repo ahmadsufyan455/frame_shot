@@ -148,74 +148,73 @@ class _AspectRatioSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentRatio = ref.watch(frameConfigProvider).aspectRatio;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                _RatioButton(
-                  label: 'Original',
-                  aspectRatio: 1.2,
-                  isSelected: currentRatio == model.AspectRatio.original,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.original),
-                ),
-                const SizedBox(width: 16),
-                _RatioButton(
-                  label: '1:1',
-                  aspectRatio: 1.0,
-                  isSelected: currentRatio == model.AspectRatio.square,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.square),
-                ),
-                const SizedBox(width: 16),
-                _RatioButton(
-                  label: '4:5',
-                  aspectRatio: 4 / 5,
-                  isSelected: currentRatio == model.AspectRatio.fourFive,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.fourFive),
-                ),
-                const SizedBox(width: 16),
-                _RatioButton(
-                  label: '3:4',
-                  aspectRatio: 3 / 4,
-                  isSelected: currentRatio == model.AspectRatio.threeFour,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.threeFour),
-                ),
-                const SizedBox(width: 16),
-                _RatioButton(
-                  label: '16:9',
-                  aspectRatio: 16 / 9,
-                  isSelected: currentRatio == model.AspectRatio.sixteenNine,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.sixteenNine),
-                ),
-                const SizedBox(width: 16),
-                _RatioButton(
-                  label: '9:16',
-                  aspectRatio: 9 / 16,
-                  isSelected: currentRatio == model.AspectRatio.nineSixteen,
-                  onTap: () => ref
-                      .read(frameConfigProvider.notifier)
-                      .setAspectRatio(model.AspectRatio.nineSixteen),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: _RatioButton(
+              label: 'Original',
+              aspectRatio: 1.2,
+              isSelected: currentRatio == model.AspectRatio.original,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.original),
             ),
           ),
-        );
-      },
+          Expanded(
+            child: _RatioButton(
+              label: '1:1',
+              aspectRatio: 1.0,
+              isSelected: currentRatio == model.AspectRatio.square,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.square),
+            ),
+          ),
+          Expanded(
+            child: _RatioButton(
+              label: '4:5',
+              aspectRatio: 4 / 5,
+              isSelected: currentRatio == model.AspectRatio.fourFive,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.fourFive),
+            ),
+          ),
+          Expanded(
+            child: _RatioButton(
+              label: '3:4',
+              aspectRatio: 3 / 4,
+              isSelected: currentRatio == model.AspectRatio.threeFour,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.threeFour),
+            ),
+          ),
+          Expanded(
+            child: _RatioButton(
+              label: '16:9',
+              aspectRatio: 16 / 9,
+              isSelected: currentRatio == model.AspectRatio.sixteenNine,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.sixteenNine),
+            ),
+          ),
+          Expanded(
+            child: _RatioButton(
+              label: '9:16',
+              aspectRatio: 9 / 16,
+              isSelected: currentRatio == model.AspectRatio.nineSixteen,
+              onTap: () => ref
+                  .read(frameConfigProvider.notifier)
+                  .setAspectRatio(model.AspectRatio.nineSixteen),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
