@@ -59,6 +59,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>FrameShot needs access to save framed photos to your gallery.</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>

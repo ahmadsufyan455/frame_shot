@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'providers/settings_providers.dart';
 
@@ -68,66 +71,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           _SectionHeader(title: 'ABOUT'),
           const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1E),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.help_outline,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Help & Support',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Divider(height: 1, color: Colors.white.withValues(alpha: 0.1)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Version',
-                        style: TextStyle(color: Colors.white, fontSize: 15),
-                      ),
-                      Text(
-                        '1.1.0 (Build 42)',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const _AboutSection(),
         ],
       ),
     );
@@ -290,6 +234,130 @@ class _SettingsSwitch extends StatelessWidget {
       inactiveThumbColor: Colors.white54,
       inactiveTrackColor: Colors.white12,
       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+    );
+  }
+}
+
+class _AboutSection extends StatefulWidget {
+  const _AboutSection();
+
+  @override
+  State<_AboutSection> createState() => _AboutSectionState();
+}
+
+class _AboutSectionState extends State<_AboutSection> {
+  String _version = '';
+  String _buildNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = info.version;
+        _buildNumber = info.buildNumber;
+      });
+    }
+  }
+
+  Future<void> _sendFeedback() async {
+    final subject = Uri.encodeComponent(
+      'FrameShot Feedback (v$_version)',
+    );
+    final uri = Uri.parse(
+      'mailto:simpelkode@gmail.com?subject=$subject',
+    );
+    await launchUrl(uri);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String versionText;
+    if (_version.isEmpty) {
+      versionText = '...';
+    } else if (kDebugMode) {
+      versionText = '$_version (Build $_buildNumber)';
+    } else {
+      versionText = _version;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: _sendFeedback,
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.mail_outline,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Send Feedback',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Spacer(),
+                  Icon(
+                    Icons.open_in_new,
+                    color: Colors.white38,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Version',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  versionText,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
