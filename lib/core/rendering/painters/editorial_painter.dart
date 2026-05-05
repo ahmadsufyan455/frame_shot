@@ -15,15 +15,27 @@ class EditorialPainter extends FramePainter {
   static const _textColor = Color(0xFF000000);
   static const _subtextColor = Color(0xFF737373);
 
+  static const _basePanelRatio = 0.16;
+  static const _locationExtraRatio = 0.04;
+
   double get _horizontalPadding => imageSize.width * frameWeightMultiplier;
   double get _topPadding => imageSize.width * frameWeightMultiplier;
-  double get _panelHeight => imageSize.width * 0.16;
+
+  bool get _hasLocation {
+    final location = _findValue(visibleFields, 'Location');
+    return location.isNotEmpty;
+  }
+
+  double _panelHeightFor(double width) {
+    final base = width * _basePanelRatio;
+    return _hasLocation ? base + width * _locationExtraRatio : base;
+  }
 
   @override
   Size calculateTotalSize(Size imageSize) {
     final hPad = imageSize.width * frameWeightMultiplier;
     final tPad = imageSize.width * frameWeightMultiplier;
-    final panel = imageSize.width * 0.16;
+    final panel = _panelHeightFor(imageSize.width);
     return Size(imageSize.width + (hPad * 2), imageSize.height + tPad + panel);
   }
 
@@ -45,7 +57,7 @@ class EditorialPainter extends FramePainter {
       0,
       photoRect.bottom,
       totalSize.width,
-      _panelHeight,
+      _panelHeightFor(imageSize.width),
     );
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
@@ -109,6 +121,8 @@ class EditorialPainter extends FramePainter {
       iso,
     ].where((s) => s.isNotEmpty).join(' \u2022 ');
 
+    var metaBottomY = dividerY + imageSize.width * 0.015;
+
     if (metaParts.isNotEmpty) {
       final metaTp = TextPainter(
         text: TextSpan(
@@ -126,7 +140,30 @@ class EditorialPainter extends FramePainter {
 
       metaTp.paint(
         canvas,
-        Offset(centerX - metaTp.width / 2, dividerY + imageSize.width * 0.015),
+        Offset(centerX - metaTp.width / 2, metaBottomY),
+      );
+      metaBottomY += metaTp.height + imageSize.width * 0.01;
+    }
+
+    final location = _findValue(fields, 'Location');
+    if (location.isNotEmpty) {
+      final locationTp = TextPainter(
+        text: TextSpan(
+          text: location,
+          style: TextStyle(
+            fontSize: imageSize.width * 0.024,
+            color: _subtextColor,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: panelRect.width * 0.9);
+
+      locationTp.paint(
+        canvas,
+        Offset(centerX - locationTp.width / 2, metaBottomY),
       );
     }
   }

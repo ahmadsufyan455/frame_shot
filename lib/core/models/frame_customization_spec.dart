@@ -43,6 +43,10 @@ abstract final class FrameCustomizationFields {
     key: 'dateTime',
     label: 'Date & Time',
   );
+  static const location = FrameCustomizationField(
+    key: 'location',
+    label: 'Location',
+  );
 }
 
 abstract final class FrameCustomizationSpecs {
@@ -118,6 +122,7 @@ abstract final class FrameCustomizationSpecs {
       FrameCustomizationFields.aperture,
       FrameCustomizationFields.shutterSpeed,
       FrameCustomizationFields.iso,
+      FrameCustomizationFields.location,
     ],
   );
 

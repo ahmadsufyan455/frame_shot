@@ -36,10 +36,50 @@ class ExifExtraction extends _$ExifExtraction {
   Future<ExifData?> build() async {
     final image = ref.watch(selectedImageProvider);
     if (image == null) return null;
+
+    final settings = ref.watch(settingsProvider);
+
     try {
-      return await ExifService.extractFromFile(
+      var exif = await ExifService.extractFromFile(
         image.path,
       );
+
+      if (!settings.locationEnabled) {
+        return exif.stripLocation();
+      }
+
+      // Reverse geocode if we have coordinates but no
+      // location name.
+      if (exif.locationName == null &&
+          exif.latitude != null &&
+          exif.longitude != null) {
+        final name = await GeocodeService.reverseGeocode(
+          exif.latitude!,
+          exif.longitude!,
+        );
+        if (name != null) {
+          exif = ExifData(
+            cameraMake: exif.cameraMake,
+            cameraModel: exif.cameraModel,
+            lensModel: exif.lensModel,
+            aperture: exif.aperture,
+            shutterSpeed: exif.shutterSpeed,
+            iso: exif.iso,
+            focalLength: exif.focalLength,
+            focalLengthEquiv: exif.focalLengthEquiv,
+            exposureCompensation: exif.exposureCompensation,
+            whiteBalance: exif.whiteBalance,
+            dateTime: exif.dateTime,
+            latitude: exif.latitude,
+            longitude: exif.longitude,
+            locationName: name,
+            imageWidth: exif.imageWidth,
+            imageHeight: exif.imageHeight,
+          );
+        }
+      }
+
+      return exif;
     } on Exception {
       return ExifData.empty;
     }
@@ -91,24 +131,4 @@ Future<ui.Image?> previewImage(Ref ref) async {
   return frame.image;
 }
 
-// -- TASK-070: locationPermissionProvider --
 
-@riverpod
-bool locationPermission(Ref ref) {
-  final settings = ref.watch(settingsProvider);
-  return settings.locationEnabled;
-}
-
-// -- TASK-070: reverseGeocodeProvider --
-
-@riverpod
-Future<String?> reverseGeocode(
-  Ref ref,
-  double latitude,
-  double longitude,
-) async {
-  return GeocodeService.reverseGeocode(
-    latitude,
-    longitude,
-  );
-}

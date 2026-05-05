@@ -89,6 +89,25 @@ class ExifData {
     return '$imageWidth x $imageHeight';
   }
 
+  /// Returns a copy with all GPS/location fields nulled out.
+  ExifData stripLocation() {
+    return ExifData(
+      cameraMake: cameraMake,
+      cameraModel: cameraModel,
+      lensModel: lensModel,
+      aperture: aperture,
+      shutterSpeed: shutterSpeed,
+      iso: iso,
+      focalLength: focalLength,
+      focalLengthEquiv: focalLengthEquiv,
+      exposureCompensation: exposureCompensation,
+      whiteBalance: whiteBalance,
+      dateTime: dateTime,
+      imageWidth: imageWidth,
+      imageHeight: imageHeight,
+    );
+  }
+
   ExifData copyWith({
     String? cameraMake,
     String? cameraModel,

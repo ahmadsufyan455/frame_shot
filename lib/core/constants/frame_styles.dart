@@ -147,6 +147,7 @@ abstract final class FrameStyles {
       textColor: Color(0xFF000000),
       accentColor: Color(0xFF737373),
       fontFamily: FrameFontFamily.serif,
+      visibleFields: ExifFieldVisibility(location: true),
     ),
     thumbnailAsset:
         'assets/thumbnails/editorial.png',
