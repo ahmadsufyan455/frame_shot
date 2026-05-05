@@ -110,7 +110,9 @@ class FieldOverrideTile extends ConsumerWidget {
           cursorColor: colorScheme.primary,
           decoration: InputDecoration(
             hintText: 'Enter $label',
-            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: colorScheme.outline),
             ),
