@@ -142,7 +142,7 @@ class FrameConfig {
     this.textColor = const Color(0xFF1A1A1A),
     this.accentColor = const Color(0xFF666666),
     this.fontFamily = FrameFontFamily.sans,
-    this.aspectRatio = AspectRatio.square,
+    this.aspectRatio = AspectRatio.original,
     this.frameWeight = FrameWeight.medium,
     this.showCameraLogo = false,
     this.showLocation = false,

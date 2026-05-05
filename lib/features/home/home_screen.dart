@@ -5,8 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/models/frame_style.dart';
 import '../../core/models/image_file.dart';
+import '../customize/providers/customize_providers.dart';
 import '../preview/providers/preview_providers.dart';
+import '../preview/providers/style_providers.dart';
+import '../settings/providers/settings_providers.dart';
 import 'widgets/import_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -44,6 +48,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .set(
           ImageFile(path: xFile.path, name: xFile.name, sizeBytes: stat.size),
         );
+
+    // Reset style and config to defaults for each new import.
+    await ref.read(settingsProvider.notifier).setLastStyleId(
+      FrameStyleId.classic,
+    );
+    ref.invalidate(selectedStyleProvider);
+    ref.invalidate(frameConfigProvider);
 
     if (mounted) {
       setState(() {
