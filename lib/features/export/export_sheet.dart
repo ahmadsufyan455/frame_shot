@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/models/export_settings.dart';
 import '../settings/providers/settings_providers.dart';
 import 'providers/export_providers.dart';
+import 'widgets/saved_to_gallery_toast.dart';
 
 class ExportSheet extends ConsumerStatefulWidget {
   const ExportSheet({super.key});
@@ -37,12 +38,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       if (next.error != null) {
         _showErrorSnackBar(next.error!);
       }
-      if (next.status == ExportStatus.done &&
-          next.savedPath != null) {
+      if (next.status == ExportStatus.done && next.savedPath != null) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Saved to gallery')),
-        );
+        showSavedToGalleryToast(context);
       }
     });
 
@@ -52,17 +50,11 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
         constraints: const BoxConstraints(maxWidth: 560),
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(
-            24, 24, 24, 28 + bottomPadding,
-          ),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 28 + bottomPadding),
           decoration: const BoxDecoration(
             color: Color(0xFF171717),
-            border: Border(
-              top: BorderSide(color: Color(0xFF262626)),
-            ),
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
+            border: Border(top: BorderSide(color: Color(0xFF262626))),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
                 color: Color(0x66000000),
@@ -75,9 +67,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Header(
-                onDone: () => Navigator.of(context).pop(),
-              ),
+              _Header(onDone: () => Navigator.of(context).pop()),
               const SizedBox(height: 24),
               _FormatSection(
                 selected: _settings.format,
@@ -90,8 +80,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 _QualitySection(
                   value: _settings.jpegQuality,
                   onChanged: (q) => setState(() {
-                    _settings =
-                        _settings.copyWith(jpegQuality: q);
+                    _settings = _settings.copyWith(jpegQuality: q);
                   }),
                 ),
               ],
@@ -109,15 +98,11 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 lastAction: _lastAction,
                 onSave: () {
                   _lastAction = _Action.save;
-                  ref
-                      .read(exportProvider.notifier)
-                      .saveToGallery(_settings);
+                  ref.read(exportProvider.notifier).saveToGallery(_settings);
                 },
                 onShare: () {
                   _lastAction = _Action.share;
-                  ref
-                      .read(exportProvider.notifier)
-                      .shareToApp(_settings);
+                  ref.read(exportProvider.notifier).shareToApp(_settings);
                 },
               ),
             ],
@@ -181,10 +166,7 @@ class _Header extends StatelessWidget {
 }
 
 class _FormatSection extends StatelessWidget {
-  const _FormatSection({
-    required this.selected,
-    required this.onChanged,
-  });
+  const _FormatSection({required this.selected, required this.onChanged});
 
   final ExportFormat selected;
   final ValueChanged<ExportFormat> onChanged;
@@ -204,20 +186,14 @@ class _FormatSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        _DarkFormatSelector(
-          selected: selected,
-          onChanged: onChanged,
-        ),
+        _DarkFormatSelector(selected: selected, onChanged: onChanged),
       ],
     );
   }
 }
 
 class _DarkFormatSelector extends StatelessWidget {
-  const _DarkFormatSelector({
-    required this.selected,
-    required this.onChanged,
-  });
+  const _DarkFormatSelector({required this.selected, required this.onChanged});
 
   final ExportFormat selected;
   final ValueChanged<ExportFormat> onChanged;
@@ -227,13 +203,9 @@ class _DarkFormatSelector extends StatelessWidget {
     return Row(
       children: ExportFormat.values.map((format) {
         final isSelected = selected == format;
-        final label = format == ExportFormat.jpeg
-            ? 'JPEG'
-            : 'PNG';
+        final label = format == ExportFormat.jpeg ? 'JPEG' : 'PNG';
         return Padding(
-          padding: EdgeInsets.only(
-            left: format == ExportFormat.jpeg ? 0 : 8,
-          ),
+          padding: EdgeInsets.only(left: format == ExportFormat.jpeg ? 0 : 8),
           child: GestureDetector(
             onTap: () => onChanged(format),
             behavior: HitTestBehavior.opaque,
@@ -242,26 +214,18 @@ class _DarkFormatSelector extends StatelessWidget {
               curve: Curves.easeOut,
               height: 36,
               constraints: const BoxConstraints(minWidth: 72),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white
-                    : const Color(0xFF262626),
+                color: isSelected ? Colors.white : const Color(0xFF262626),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected
-                      ? Colors.black
-                      : Colors.white,
+                  color: isSelected ? Colors.black : Colors.white,
                   fontSize: 14,
-                  fontWeight: isSelected
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   letterSpacing: 0,
                 ),
               ),
@@ -274,10 +238,7 @@ class _DarkFormatSelector extends StatelessWidget {
 }
 
 class _QualitySection extends StatelessWidget {
-  const _QualitySection({
-    required this.value,
-    required this.onChanged,
-  });
+  const _QualitySection({required this.value, required this.onChanged});
 
   final int value;
   final ValueChanged<int> onChanged;
@@ -323,7 +284,8 @@ class _QualitySection extends StatelessWidget {
             value: value.toDouble(),
             min: ImageConstants.minExportQuality.toDouble(),
             max: ImageConstants.maxExportQuality.toDouble(),
-            divisions: ImageConstants.maxExportQuality -
+            divisions:
+                ImageConstants.maxExportQuality -
                 ImageConstants.minExportQuality,
             onChanged: (v) => onChanged(v.round()),
           ),
@@ -334,10 +296,7 @@ class _QualitySection extends StatelessWidget {
 }
 
 class _ResolutionIndicator extends StatelessWidget {
-  const _ResolutionIndicator({
-    required this.isPro,
-    required this.onUpgrade,
-  });
+  const _ResolutionIndicator({required this.isPro, required this.onUpgrade});
 
   final bool isPro;
   final VoidCallback onUpgrade;
@@ -345,10 +304,7 @@ class _ResolutionIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF262626),
         borderRadius: BorderRadius.circular(10),
@@ -359,9 +315,7 @@ class _ResolutionIndicator extends StatelessWidget {
             isPro
                 ? Icons.check_circle_outline
                 : Icons.photo_size_select_large_outlined,
-            color: isPro
-                ? const Color(0xFF34C759)
-                : const Color(0xFFA1A1A1),
+            color: isPro ? const Color(0xFF34C759) : const Color(0xFFA1A1A1),
             size: 20,
           ),
           const SizedBox(width: 10),
@@ -370,11 +324,9 @@ class _ResolutionIndicator extends StatelessWidget {
               isPro
                   ? 'Full resolution'
                   : 'Capped at '
-                      '${ImageConstants.freeMaxDimension}px',
+                        '${ImageConstants.freeMaxDimension}px',
               style: TextStyle(
-                color: isPro
-                    ? Colors.white
-                    : const Color(0xFFA1A1A1),
+                color: isPro ? Colors.white : const Color(0xFFA1A1A1),
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0,
@@ -425,19 +377,18 @@ class _ActionButtons extends StatelessWidget {
   final VoidCallback onShare;
 
   bool get _isLoading =>
-      status != ExportStatus.idle &&
-      status != ExportStatus.done;
+      status != ExportStatus.idle && status != ExportStatus.done;
 
   @override
   Widget build(BuildContext context) {
-    final saveLoading = _isLoading &&
+    final saveLoading =
+        _isLoading &&
         (status == ExportStatus.saving ||
-            (status == ExportStatus.rendering &&
-                lastAction == _Action.save));
-    final shareLoading = _isLoading &&
+            (status == ExportStatus.rendering && lastAction == _Action.save));
+    final shareLoading =
+        _isLoading &&
         (status == ExportStatus.sharing ||
-            (status == ExportStatus.rendering &&
-                lastAction == _Action.share));
+            (status == ExportStatus.rendering && lastAction == _Action.share));
 
     return Row(
       children: [
@@ -489,6 +440,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fgColor = isPrimary ? Colors.black : Colors.white;
+    final progressColor = isPrimary && isLoading ? Colors.white : fgColor;
 
     return GestureDetector(
       onTap: isDisabled ? null : onTap,
@@ -498,14 +450,10 @@ class _ActionButton extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isPrimary
-              ? (isDisabled
-                  ? const Color(0xFF262626)
-                  : Colors.white)
+              ? (isDisabled ? const Color(0xFF262626) : Colors.white)
               : const Color(0xFF262626),
           borderRadius: BorderRadius.circular(14),
-          border: isPrimary
-              ? null
-              : Border.all(color: const Color(0xFF404040)),
+          border: isPrimary ? null : Border.all(color: const Color(0xFF404040)),
         ),
         child: isLoading
             ? SizedBox(
@@ -513,7 +461,7 @@ class _ActionButton extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: fgColor.withValues(alpha: 0.5),
+                  color: progressColor.withValues(alpha: 0.5),
                 ),
               )
             : Row(
