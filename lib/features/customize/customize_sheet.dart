@@ -139,24 +139,23 @@ class CustomizeSheet extends ConsumerWidget {
                       .setFrameWeight(value),
                 ),
               ),
-              const SizedBox(height: 28),
-              TextButton(
-                onPressed: onAdvancedPressed,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF737373),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: const Size(48, 32),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+              const SizedBox(height: 40),
+              GestureDetector(
+                onTap: onAdvancedPressed,
                 child: const Text.rich(
                   TextSpan(
                     text: 'More customization options available in ',
                     children: [
                       TextSpan(
                         text: 'Advanced',
-                        style: TextStyle(decoration: TextDecoration.underline),
+                        style: TextStyle(
+                          color: Color(0xFF60A5FA),
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Color(0xFF60A5FA),
+                        ),
                       ),
-                      TextSpan(text: '.'),
+                      TextSpan(text: ' →'),
                     ],
                   ),
                   textAlign: TextAlign.center,
@@ -165,6 +164,7 @@ class CustomizeSheet extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                     height: 1.35,
                     letterSpacing: 0,
+                    color: Color(0xFFA1A1A1),
                   ),
                 ),
               ),

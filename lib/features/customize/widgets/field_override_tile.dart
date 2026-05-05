@@ -93,14 +93,31 @@ class FieldOverrideTile extends ConsumerWidget {
 
   void _showEditDialog(BuildContext context, WidgetRef ref, String current) {
     final controller = TextEditingController(text: current);
+    final colorScheme = Theme.of(context).colorScheme;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Edit $label'),
+        backgroundColor: colorScheme.surface,
+        title: Text(
+          'Edit $label',
+          style: TextStyle(color: colorScheme.onSurface),
+        ),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: 'Enter $label'),
+          style: TextStyle(color: colorScheme.onSurface),
+          cursorColor: colorScheme.primary,
+          decoration: InputDecoration(
+            hintText: 'Enter $label',
+            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: colorScheme.outline),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: colorScheme.primary),
+            ),
+          ),
           onSubmitted: (value) {
             ref
                 .read(frameConfigProvider.notifier)
@@ -111,7 +128,10 @@ class FieldOverrideTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
           ),
           FilledButton(
             onPressed: () {

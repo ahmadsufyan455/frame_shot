@@ -140,10 +140,16 @@ class _ColorCircle extends StatelessWidget {
 
   void _showPicker(BuildContext context) {
     var picked = color;
+    final colorScheme = Theme.of(context).colorScheme;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Pick $label Color'),
+        backgroundColor: colorScheme.surface,
+        title: Text(
+          'Pick $label Color',
+          style: TextStyle(color: colorScheme.onSurface),
+        ),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: color,
@@ -155,7 +161,10 @@ class _ColorCircle extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
           ),
           FilledButton(
             onPressed: () {
