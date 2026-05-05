@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 
-import '../features/export/export_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/paywall/paywall_screen.dart';
 import '../features/preview/preview_screen.dart';
@@ -22,14 +21,6 @@ final goRouter = GoRouter(
       name: 'preview',
       builder: (context, state) =>
           const PreviewScreen(),
-      routes: [
-        GoRoute(
-          path: 'export',
-          name: 'export',
-          builder: (context, state) =>
-              const ExportScreen(),
-        ),
-      ],
     ),
     GoRoute(
       path: '/paywall',

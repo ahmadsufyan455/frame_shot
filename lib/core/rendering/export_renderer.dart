@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/painting.dart';
 import 'package:image/image.dart' as img;
 
+import '../constants/app_constants.dart';
 import '../models/exif_data.dart';
 import '../models/export_settings.dart';
 import '../models/frame_config.dart';
@@ -27,7 +28,7 @@ abstract final class ExportRenderer {
     final bytes = await File(sourceImagePath).readAsBytes();
     final codec = await ui.instantiateImageCodec(
       bytes,
-      targetWidth: isPro ? null : ExportSettings.freeMaxDimension,
+      targetWidth: isPro ? null : ImageConstants.freeMaxDimension,
     );
     final frame = await codec.getNextFrame();
     final fullImage = frame.image;

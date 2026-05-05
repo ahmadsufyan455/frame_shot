@@ -66,24 +66,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
-          _SectionHeader(title: 'EXPORT QUALITY'),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.high_quality_outlined,
-            title: 'Full Resolution Export',
-            subtitle: (proAsync.value ?? false)
-                ? 'Export in original quality'
-                : 'Requires FrameShot Pro',
-            trailing: _SettingsSwitch(
-              value: settings.fullResolutionExport,
-              onChanged: (proAsync.value ?? false)
-                  ? (value) => ref
-                        .read(settingsProvider.notifier)
-                        .setFullResolutionExport(value)
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 32),
           _SectionHeader(title: 'ABOUT'),
           const SizedBox(height: 12),
           Container(

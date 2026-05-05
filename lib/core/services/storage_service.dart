@@ -5,7 +5,6 @@ import '../models/frame_style.dart';
 abstract final class StorageService {
   static const _keyLastStyleId = 'last_style_id';
   static const _keyLocationEnabled = 'location_enabled';
-  static const _keyFullResolutionExport = 'full_resolution_export';
   static const _keyOnboardingComplete = 'onboarding_complete';
 
   static SharedPreferences? _prefs;
@@ -48,22 +47,6 @@ abstract final class StorageService {
 
   static Future<void> setLocationEnabled(bool enabled) async {
     await _instance.setBool(_keyLocationEnabled, enabled);
-  }
-
-  // -- Full resolution export --
-
-  static bool getFullResolutionExport() {
-    return _instance.getBool(_keyFullResolutionExport) ??
-        false;
-  }
-
-  static Future<void> setFullResolutionExport(
-    bool enabled,
-  ) async {
-    await _instance.setBool(
-      _keyFullResolutionExport,
-      enabled,
-    );
   }
 
   // -- Onboarding --

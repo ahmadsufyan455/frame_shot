@@ -7,25 +7,16 @@ void main() {
       const settings = ExportSettings();
       expect(settings.format, ExportFormat.jpeg);
       expect(settings.jpegQuality, 92);
-      expect(settings.fullResolution, false);
-      expect(settings.includeWatermark, true);
-    });
-
-    test('freeMaxDimension is 1600', () {
-      expect(ExportSettings.freeMaxDimension, 1600);
     });
 
     test('copyWith works', () {
       const settings = ExportSettings();
       final updated = settings.copyWith(
         format: ExportFormat.png,
-        fullResolution: true,
-        includeWatermark: false,
+        jpegQuality: 95,
       );
       expect(updated.format, ExportFormat.png);
-      expect(updated.fullResolution, true);
-      expect(updated.includeWatermark, false);
-      expect(updated.jpegQuality, 92);
+      expect(updated.jpegQuality, 95);
     });
 
     test('equality', () {

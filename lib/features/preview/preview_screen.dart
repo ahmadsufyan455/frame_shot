@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/models/frame_config.dart' as model;
 import '../../shared/widgets/error_banner.dart';
 import '../customize/customize_sheet.dart';
 import '../customize/providers/customize_providers.dart';
+import '../export/export_sheet.dart';
 import 'providers/preview_providers.dart';
 import 'widgets/frame_preview_widget.dart';
 import 'widgets/style_carousel.dart';
@@ -41,7 +41,7 @@ class PreviewScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: TextButton(
-              onPressed: () => context.pushNamed('export'),
+              onPressed: () => ExportSheet.show(context, ref: ref),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,

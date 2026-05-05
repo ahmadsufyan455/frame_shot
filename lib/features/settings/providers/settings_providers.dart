@@ -14,27 +14,22 @@ part 'settings_providers.g.dart';
 class AppSettings {
   const AppSettings({
     this.locationEnabled = false,
-    this.fullResolutionExport = false,
     this.lastStyleId = FrameStyleId.classic,
     this.onboardingComplete = false,
   });
 
   final bool locationEnabled;
-  final bool fullResolutionExport;
   final FrameStyleId lastStyleId;
   final bool onboardingComplete;
 
   AppSettings copyWith({
     bool? locationEnabled,
-    bool? fullResolutionExport,
     FrameStyleId? lastStyleId,
     bool? onboardingComplete,
   }) {
     return AppSettings(
       locationEnabled:
           locationEnabled ?? this.locationEnabled,
-      fullResolutionExport:
-          fullResolutionExport ?? this.fullResolutionExport,
       lastStyleId: lastStyleId ?? this.lastStyleId,
       onboardingComplete:
           onboardingComplete ?? this.onboardingComplete,
@@ -51,8 +46,6 @@ class Settings extends _$Settings {
     return AppSettings(
       locationEnabled:
           StorageService.getLocationEnabled(),
-      fullResolutionExport:
-          StorageService.getFullResolutionExport(),
       lastStyleId: StorageService.getLastStyleId(),
       onboardingComplete:
           StorageService.getOnboardingComplete(),
@@ -62,15 +55,6 @@ class Settings extends _$Settings {
   Future<void> setLocationEnabled(bool enabled) async {
     await StorageService.setLocationEnabled(enabled);
     state = state.copyWith(locationEnabled: enabled);
-  }
-
-  Future<void> setFullResolutionExport(
-    bool enabled,
-  ) async {
-    await StorageService.setFullResolutionExport(enabled);
-    state = state.copyWith(
-      fullResolutionExport: enabled,
-    );
   }
 
   Future<void> setLastStyleId(
