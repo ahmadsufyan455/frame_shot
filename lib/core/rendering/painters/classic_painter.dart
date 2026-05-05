@@ -19,13 +19,36 @@ class ClassicPainter extends FramePainter {
   static const _textSecondary = ui.Color(0xFF737373);
 
   double get _padding => imageSize.width * frameWeightMultiplier;
-  double get _panelHeight => imageSize.width * 0.10;
   double get _gap => imageSize.width * 0.025;
+
+  double _measuredPanelHeight(Size imgSize) {
+    final bodySize = imgSize.width * 0.038;
+    final maxWidth = imgSize.width * 0.4;
+    final fields = visibleFields;
+    final camera = _findValue(fields, 'Camera');
+
+    if (camera.isEmpty) return imgSize.width * 0.08;
+
+    final tp = TextPainter(
+      text: TextSpan(
+        text: camera,
+        style: TextStyle(fontSize: bodySize, fontWeight: FontWeight.w600),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+      ellipsis: '\u2026',
+    )..layout(maxWidth: maxWidth);
+
+    final inset = imgSize.width * 0.01;
+    final height = tp.height + (inset * 2);
+    final minHeight = imgSize.width * 0.08;
+    return height > minHeight ? height : minHeight;
+  }
 
   @override
   Size calculateTotalSize(Size imageSize) {
     final padding = imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.10;
+    final panelHeight = _measuredPanelHeight(imageSize);
     final gap = imageSize.width * 0.025;
     return Size(
       imageSize.width + (padding * 2),
@@ -60,7 +83,7 @@ class ClassicPainter extends FramePainter {
       _padding,
       photoRect.bottom + _gap,
       imageSize.width,
-      _panelHeight,
+      _measuredPanelHeight(imageSize),
     );
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
@@ -86,31 +109,17 @@ class ClassicPainter extends FramePainter {
     leftX += iconSize + (inset * 1.5);
 
     final camera = _findValue(fields, 'Camera');
-    final lens = _findValue(fields, 'Lens');
+    final leftMaxWidth = panelRect.width * 0.4;
 
-    if (camera.isNotEmpty || lens.isNotEmpty) {
-      final spans = <TextSpan>[
-        if (camera.isNotEmpty)
-          TextSpan(
-            text: camera,
-            style: TextStyle(
-              fontSize: bodySize,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
-            ),
-          ),
-        if (camera.isNotEmpty && lens.isNotEmpty) const TextSpan(text: '\n'),
-        if (lens.isNotEmpty)
-          TextSpan(
-            text: lens,
-            style: TextStyle(fontSize: smallSize, color: _textSecondary),
-          ),
-      ];
-
-      final tp = TextPainter(
-        text: TextSpan(children: spans),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: panelRect.width * 0.4);
+    if (camera.isNotEmpty) {
+      final tp = buildTextPainter(
+        camera,
+        fontSize: bodySize,
+        fontWeight: FontWeight.w600,
+        color: _textPrimary,
+        maxWidth: leftMaxWidth,
+        maxLines: 2,
+      );
       tp.paint(canvas, Offset(leftX, centerY - tp.height / 2));
     }
 
@@ -123,30 +132,26 @@ class ClassicPainter extends FramePainter {
     final bottomRight = [shutter, iso].where((s) => s.isNotEmpty).join('     ');
 
     final rightX = panelRect.right - inset;
+    final rightMaxWidth = panelRect.width * 0.45;
 
     if (topRight.isNotEmpty) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: topRight,
-          style: TextStyle(
-            fontSize: bodySize * 0.9,
-            fontWeight: FontWeight.w500,
-            color: _textPrimary,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
+      final tp = buildTextPainter(
+        topRight,
+        fontSize: bodySize * 0.9,
+        fontWeight: FontWeight.w500,
+        color: _textPrimary,
+        maxWidth: rightMaxWidth,
+      );
       tp.paint(canvas, Offset(rightX - tp.width, centerY - tp.height - 1));
     }
 
     if (bottomRight.isNotEmpty) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: bottomRight,
-          style: TextStyle(fontSize: smallSize, color: _textSecondary),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
+      final tp = buildTextPainter(
+        bottomRight,
+        fontSize: smallSize,
+        color: _textSecondary,
+        maxWidth: rightMaxWidth,
+      );
       tp.paint(canvas, Offset(rightX - tp.width, centerY + 1));
     }
   }

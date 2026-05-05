@@ -102,6 +102,8 @@ class PolaroidPainter extends FramePainter {
       ),
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
+      maxLines: 2,
+      ellipsis: '\u2026',
     )..layout(maxWidth: cardRect.width * 0.9);
 
     final captionY = photoRect.bottom + (_cardBottomPadding - tp.height) / 2;

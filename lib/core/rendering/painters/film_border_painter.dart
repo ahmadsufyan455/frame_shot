@@ -19,13 +19,30 @@ class FilmBorderPainter extends FramePainter {
 
   double get _padding => imageSize.width * frameWeightMultiplier;
   double get _sideBorder => imageSize.width * frameWeightMultiplier;
-  double get _panelHeight => imageSize.width * 0.08;
+
+  double _measuredPanelHeight(Size imgSize) {
+    final fontSize = imgSize.width * 0.022;
+    // Film border has a single row of text, but allow 2 lines for camera name
+    final tp = TextPainter(
+      text: TextSpan(
+        text: 'Xg',  // measure line height
+        style: TextStyle(fontFamily: 'monospace', fontSize: fontSize),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+    )..layout(maxWidth: imgSize.width * 0.4);
+
+    final verticalPad = imgSize.width * 0.02;
+    final height = tp.height + (verticalPad * 2);
+    final minHeight = imgSize.width * 0.08;
+    return height > minHeight ? height : minHeight;
+  }
 
   @override
   Size calculateTotalSize(Size imageSize) {
     final padding = imageSize.width * frameWeightMultiplier;
     final sideBorder = imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.08;
+    final panelHeight = _measuredPanelHeight(imageSize);
     return Size(
       imageSize.width + (padding * 2) + (sideBorder * 2),
       imageSize.height + (padding * 2) + panelHeight,
@@ -68,7 +85,7 @@ class FilmBorderPainter extends FramePainter {
       _padding + _sideBorder,
       photoRect.bottom + (_padding * 0.5),
       imageSize.width,
-      _panelHeight,
+      _measuredPanelHeight(imageSize),
     );
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
@@ -114,17 +131,20 @@ class FilmBorderPainter extends FramePainter {
             ),
           ),
           textDirection: TextDirection.ltr,
-          maxLines: 1,
+          maxLines: 2,
           ellipsis: '\u2026',
         )..layout(maxWidth: availableWidth);
 
         final centerX = leftEdge + (availableWidth - centerTp.width) / 2;
-        centerTp.paint(canvas, Offset(centerX, centerY));
+        final adjustedY =
+            panelRect.top + (panelRect.height - centerTp.height) / 2;
+        centerTp.paint(canvas, Offset(centerX, adjustedY));
       }
     }
   }
 
-  TextPainter _buildGoldText(String text, double fontSize) {
+  TextPainter _buildGoldText(String text, double fontSize,
+      {double? maxWidth}) {
     return TextPainter(
       text: TextSpan(
         text: text,
@@ -137,7 +157,9 @@ class FilmBorderPainter extends FramePainter {
         ),
       ),
       textDirection: TextDirection.ltr,
-    )..layout();
+      maxLines: 1,
+      ellipsis: '\u2026',
+    )..layout(maxWidth: maxWidth ?? double.infinity);
   }
 
   void _paintSprocketHoles(Canvas canvas, Size totalSize) {

@@ -294,12 +294,12 @@ class _StyleColorControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (spec.supportsAccentColor) const AccentColorPicker(),
-        if (spec.supportsAccentColor &&
-            (spec.supportsBackgroundColor || spec.supportsTextColor))
-          const SizedBox(width: 28),
         if (spec.supportsBackgroundColor) const BackgroundColorPicker(),
-        if (spec.supportsBackgroundColor && spec.supportsTextColor)
+        if (spec.supportsBackgroundColor &&
+            (spec.supportsAccentColor || spec.supportsTextColor))
+          const SizedBox(width: 28),
+        if (spec.supportsAccentColor) const AccentColorPicker(),
+        if (spec.supportsAccentColor && spec.supportsTextColor)
           const SizedBox(width: 28),
         if (spec.supportsTextColor) const TextColorPicker(),
       ],

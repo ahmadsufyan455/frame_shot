@@ -70,19 +70,16 @@ class MinimalLinePainter extends FramePainter {
     if (parts.isEmpty) return;
 
     final fontSize = imageSize.width * 0.024;
-    final tp = TextPainter(
-      text: TextSpan(
-        text: parts.toUpperCase(),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w600,
-          color: const ui.Color(0xCC000000),
-          letterSpacing: fontSize * 0.12,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
+    final tp = buildTextPainter(
+      parts.toUpperCase(),
+      fontSize: fontSize,
+      fontWeight: FontWeight.w600,
+      color: const ui.Color(0xCC000000),
+      letterSpacing: fontSize * 0.12,
       textAlign: TextAlign.center,
-    )..layout(maxWidth: photoRect.width * 0.85);
+      maxWidth: photoRect.width * 0.85,
+      maxLines: 2,
+    );
 
     final pillPadX = fontSize * 1.5;
     final pillPadY = fontSize * 0.6;

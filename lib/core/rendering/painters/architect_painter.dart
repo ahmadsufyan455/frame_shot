@@ -14,15 +14,47 @@ class ArchitectPainter extends FramePainter {
   });
 
   double get _padding => imageSize.width * frameWeightMultiplier;
-  double get _hudHeight => imageSize.width * 0.10;
   ui.Color get _accentColor => config.accentColor;
   ui.Color get _backgroundColor => config.backgroundColor;
   ui.Color get _textColor => config.textColor;
 
+  double _measuredHudHeight(Size imgSize) {
+    final labelSize = imgSize.width * 0.022;
+    final valueSize = imgSize.width * 0.025;
+    final gap = imgSize.width * 0.005;
+    final cellWidth = (imgSize.width - (gap * 3)) / 4;
+
+    // Measure the camera name to detect 2-line wrap
+    final fields = visibleFields;
+    final camera = _findValue(fields, 'Camera');
+    final valueTp = TextPainter(
+      text: TextSpan(
+        text: camera.isNotEmpty ? camera.toUpperCase() : 'X',
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: valueSize,
+          fontWeight: FontWeight.w700,
+          letterSpacing: valueSize * 0.05,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+      ellipsis: '\u2026',
+    )..layout(maxWidth: cellWidth - 4);
+
+    final isTwoLines = valueTp.computeLineMetrics().length > 1;
+    // More bottom space inside the cell when text wraps to 2 lines
+    final topPad = imgSize.width * 0.015;
+    final bottomPad = isTwoLines ? imgSize.width * 0.04 : imgSize.width * 0.02;
+    final contentHeight = topPad + labelSize + valueTp.height + bottomPad;
+    final minHeight = imgSize.width * 0.10;
+    return contentHeight > minHeight ? contentHeight : minHeight;
+  }
+
   @override
   Size calculateTotalSize(Size imageSize) {
     final padding = imageSize.width * frameWeightMultiplier;
-    final hudHeight = imageSize.width * 0.10;
+    final hudHeight = _measuredHudHeight(imageSize);
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2) + hudHeight,
@@ -51,7 +83,7 @@ class ArchitectPainter extends FramePainter {
       _padding,
       photoRect.bottom + (_padding * 0.3),
       imageSize.width,
-      _hudHeight,
+      _measuredHudHeight(imageSize),
     );
     _paintHud(canvas, hudRect);
     paintWatermark(canvas, totalSize);
@@ -172,6 +204,8 @@ class ArchitectPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
+        maxLines: 1,
+        ellipsis: '\u2026',
       )..layout(maxWidth: cellWidth);
 
       labelTp.paint(
@@ -195,6 +229,8 @@ class ArchitectPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
+        maxLines: 2,
+        ellipsis: '\u2026',
       )..layout(maxWidth: cellWidth - 4);
 
       valueTp.paint(

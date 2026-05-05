@@ -18,12 +18,21 @@ class DarkroomPainter extends FramePainter {
   static const _textColor = ui.Color(0xFF9CA3AF);
 
   double get _padding => imageSize.width * frameWeightMultiplier;
-  double get _panelHeight => imageSize.width * 0.12;
+
+  double _measuredPanelHeight(Size imgSize) {
+    final fontSize = imgSize.width * 0.028;
+    final lineGap = fontSize * 0.6;
+    final inset = imgSize.width * 0.015;
+    // Two rows of text + gap between them + vertical insets
+    final textHeight = (fontSize * 2) + lineGap + (inset * 2);
+    final minHeight = imgSize.width * 0.10;
+    return textHeight > minHeight ? textHeight : minHeight;
+  }
 
   @override
   Size calculateTotalSize(Size imageSize) {
     final padding = imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.12;
+    final panelHeight = _measuredPanelHeight(imageSize);
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2) + panelHeight,
@@ -58,7 +67,7 @@ class DarkroomPainter extends FramePainter {
       _padding,
       innerRect.bottom + (_padding * 0.5),
       imageSize.width,
-      _panelHeight,
+      _measuredPanelHeight(imageSize),
     );
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
@@ -74,7 +83,6 @@ class DarkroomPainter extends FramePainter {
     final inset = imageSize.width * 0.015;
 
     final camera = _findValue(fields, 'Camera');
-    final lens = _findValue(fields, 'Lens');
     final focal = _findValue(fields, 'Focal Length');
     final aperture = _findValue(fields, 'Aperture');
     final shutter = _findValue(fields, 'Shutter');
@@ -89,14 +97,6 @@ class DarkroomPainter extends FramePainter {
         camera,
         fontSize,
         Offset(panelRect.left + inset, topY),
-      );
-    }
-    if (lens.isNotEmpty) {
-      _paintMono(
-        canvas,
-        lens,
-        fontSize,
-        Offset(panelRect.left + inset, bottomY),
       );
     }
 
@@ -122,19 +122,15 @@ class DarkroomPainter extends FramePainter {
   }
 
   TextPainter _buildMono(String text, double fontSize) {
-    return TextPainter(
-      text: TextSpan(
-        text: text.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'monospace',
-          fontSize: fontSize,
-          color: _textColor,
-          fontWeight: FontWeight.w400,
-          letterSpacing: fontSize * 0.12,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: imageSize.width * 0.48);
+    return buildTextPainter(
+      text.toUpperCase(),
+      fontSize: fontSize,
+      color: _textColor,
+      fontWeight: FontWeight.w400,
+      letterSpacing: fontSize * 0.12,
+      maxWidth: imageSize.width * 0.48,
+      maxLines: 2,
+    );
   }
 
   String _findValue(List<(String, String)> fields, String label) {

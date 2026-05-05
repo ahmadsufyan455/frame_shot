@@ -15,7 +15,7 @@ class EditorialPainter extends FramePainter {
   static const _textColor = Color(0xFF000000);
   static const _subtextColor = Color(0xFF737373);
 
-  static const _basePanelRatio = 0.16;
+  static const _basePanelRatio = 0.18;
   static const _locationExtraRatio = 0.04;
 
   double get _horizontalPadding => imageSize.width * frameWeightMultiplier;
@@ -85,7 +85,7 @@ class EditorialPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
-        maxLines: 1,
+        maxLines: 2,
         ellipsis: '\u2026',
       )..layout(maxWidth: panelRect.width * 0.8);
 
@@ -136,6 +136,8 @@ class EditorialPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
+        maxLines: 1,
+        ellipsis: '\u2026',
       )..layout(maxWidth: panelRect.width * 0.9);
 
       metaTp.paint(
@@ -159,6 +161,8 @@ class EditorialPainter extends FramePainter {
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
+        maxLines: 1,
+        ellipsis: '\u2026',
       )..layout(maxWidth: panelRect.width * 0.9);
 
       locationTp.paint(

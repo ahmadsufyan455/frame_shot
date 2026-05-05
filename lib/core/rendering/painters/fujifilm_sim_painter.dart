@@ -18,12 +18,34 @@ class FujifilmSimPainter extends FramePainter {
   static const _textColor = ui.Color(0xFF1E3A3A);
 
   double get _padding => imageSize.width * frameWeightMultiplier;
-  double get _panelHeight => imageSize.width * 0.08;
+
+  double _measuredPanelHeight(Size imgSize) {
+    final fontSize = imgSize.width * 0.038;
+    // Measure camera text (longest potential text) with 2 lines
+    final fields = visibleFields;
+    final camera = _findValue(fields, 'Camera');
+    final columnWidth = imgSize.width * 0.35;
+
+    final tp = TextPainter(
+      text: TextSpan(
+        text: camera.isNotEmpty ? camera : 'X',
+        style: TextStyle(fontFamily: 'serif', fontSize: fontSize),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+      ellipsis: '\u2026',
+    )..layout(maxWidth: columnWidth);
+
+    final verticalPad = imgSize.width * 0.02;
+    final height = tp.height + (verticalPad * 2);
+    final minHeight = imgSize.width * 0.08;
+    return height > minHeight ? height : minHeight;
+  }
 
   @override
   Size calculateTotalSize(Size imageSize) {
     final padding = imageSize.width * frameWeightMultiplier;
-    final panelHeight = imageSize.width * 0.08;
+    final panelHeight = _measuredPanelHeight(imageSize);
     return Size(
       imageSize.width + (padding * 2),
       imageSize.height + (padding * 2) + panelHeight,
@@ -55,7 +77,7 @@ class FujifilmSimPainter extends FramePainter {
       _padding,
       cardRect.bottom + (_padding * 0.6),
       imageSize.width,
-      _panelHeight,
+      _measuredPanelHeight(imageSize),
     );
     paintInfoPanel(canvas, panelRect);
     paintWatermark(canvas, totalSize);
@@ -65,7 +87,7 @@ class FujifilmSimPainter extends FramePainter {
   void paintInfoPanel(Canvas canvas, Rect panelRect) {
     final fields = visibleFields;
     final fontSize = imageSize.width * 0.038;
-    final centerY = panelRect.top + (panelRect.height - fontSize) / 2;
+    final columnWidth = panelRect.width * 0.35;
 
     final camera = _findValue(fields, 'Camera');
     final focal = _findValue(fields, 'Focal Length');
@@ -82,8 +104,11 @@ class FujifilmSimPainter extends FramePainter {
           ),
         ),
         textDirection: TextDirection.ltr,
-      )..layout();
-      leftTp.paint(canvas, Offset(panelRect.left, centerY));
+        maxLines: 2,
+        ellipsis: '\u2026',
+      )..layout(maxWidth: columnWidth);
+      final leftY = panelRect.top + (panelRect.height - leftTp.height) / 2;
+      leftTp.paint(canvas, Offset(panelRect.left, leftY));
     }
 
     final centerTp = TextPainter(
@@ -97,7 +122,10 @@ class FujifilmSimPainter extends FramePainter {
         ),
       ),
       textDirection: TextDirection.ltr,
-    )..layout();
+      maxLines: 1,
+      ellipsis: '\u2026',
+    )..layout(maxWidth: panelRect.width * 0.4);
+    final centerY = panelRect.top + (panelRect.height - centerTp.height) / 2;
     centerTp.paint(
       canvas,
       Offset(panelRect.left + (panelRect.width - centerTp.width) / 2, centerY),
@@ -115,8 +143,11 @@ class FujifilmSimPainter extends FramePainter {
           ),
         ),
         textDirection: TextDirection.ltr,
-      )..layout();
-      rightTp.paint(canvas, Offset(panelRect.right - rightTp.width, centerY));
+        maxLines: 2,
+        ellipsis: '\u2026',
+      )..layout(maxWidth: columnWidth);
+      final rightY = panelRect.top + (panelRect.height - rightTp.height) / 2;
+      rightTp.paint(canvas, Offset(panelRect.right - rightTp.width, rightY));
     }
   }
 

@@ -53,7 +53,6 @@ abstract final class FrameCustomizationSpecs {
   static const _classic = FrameCustomizationSpec(
     metadataFields: [
       FrameCustomizationFields.camera,
-      FrameCustomizationFields.lens,
       FrameCustomizationFields.focalLength,
       FrameCustomizationFields.aperture,
       FrameCustomizationFields.shutterSpeed,
@@ -64,7 +63,6 @@ abstract final class FrameCustomizationSpecs {
   static const _darkroom = FrameCustomizationSpec(
     metadataFields: [
       FrameCustomizationFields.camera,
-      FrameCustomizationFields.lens,
       FrameCustomizationFields.focalLength,
       FrameCustomizationFields.aperture,
       FrameCustomizationFields.shutterSpeed,
