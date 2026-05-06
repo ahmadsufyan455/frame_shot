@@ -34,6 +34,27 @@ abstract final class BrandLogos {
 
   static String? pathForBrand(String? brand) {
     if (brand == null) return null;
-    return map[brand.toLowerCase()];
+
+    final normalized = _normalize(brand);
+    final exact = map[normalized];
+    if (exact != null) return exact;
+
+    // Fallback: match brand keys inside longer camera make strings
+    // such as "nikon corporation" or "samsung galaxy s25".
+    for (final entry in map.entries) {
+      final key = entry.key;
+      if (normalized.contains(key)) return entry.value;
+
+      final compactKey = key.replaceAll(' ', '');
+      final compactMake = normalized.replaceAll(' ', '');
+      if (compactMake.contains(compactKey)) return entry.value;
+    }
+
+    return null;
+  }
+
+  static String _normalize(String input) {
+    final lowered = input.toLowerCase().trim();
+    return lowered.replaceAll(RegExp(r'\s+'), ' ');
   }
 }
