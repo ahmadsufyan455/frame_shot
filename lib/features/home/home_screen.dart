@@ -25,6 +25,84 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isLoading = false;
 
+  Future<void> _showImportOptionsSheet() async {
+    if (_isLoading) return;
+    final isPro = ref.read(proStatusProvider).value ?? false;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF171717),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF575757),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 34),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Text(
+                    'Import Photos',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _ImportOptionTile(
+                  icon: Icons.add_photo_alternate_outlined,
+                  title: 'Single Photo',
+                  subtitle: 'Frame one perfect shot',
+                  backgroundColor: Color(0xFF333333),
+                  iconBackgroundColor: Color(0xFF5A5A5A),
+                  iconColor: Colors.white,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickImage();
+                  },
+                ),
+                const SizedBox(height: 10),
+                _ImportOptionTile(
+                  icon: Icons.photo_library_outlined,
+                  title: 'Batch Process',
+                  subtitle: 'Apply to multiple photos',
+                  backgroundColor: Color(0xFF242424),
+                  iconBackgroundColor: Color(0xFF151515),
+                  iconColor: Colors.white,
+                  isLocked: !isPro,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickBatchImages();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
     setState(() {
       _isLoading = true;
@@ -212,13 +290,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _buildTextContent(),
               const SizedBox(width: 100),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ImportButton(onTap: _pickImage, isLoading: _isLoading),
-                  const SizedBox(height: 18),
-                  _BatchButton(onTap: _isLoading ? null : _pickBatchImages),
-                ],
+              ImportButton(
+                onTap: _showImportOptionsSheet,
+                isLoading: _isLoading,
               ),
             ],
           ),
@@ -238,9 +312,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 _buildTextContent(),
                 const SizedBox(height: 64),
-                ImportButton(onTap: _pickImage, isLoading: _isLoading),
-                const SizedBox(height: 18),
-                _BatchButton(onTap: _isLoading ? null : _pickBatchImages),
+                ImportButton(
+                  onTap: _showImportOptionsSheet,
+                  isLoading: _isLoading,
+                ),
               ],
             ),
           ),
@@ -251,21 +326,124 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _BatchButton extends StatelessWidget {
-  const _BatchButton({required this.onTap});
+class _ImportOptionTile extends StatelessWidget {
+  const _ImportOptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.backgroundColor,
+    required this.iconBackgroundColor,
+    required this.iconColor,
+    required this.onTap,
+    this.isLocked = false,
+  });
 
-  final VoidCallback? onTap;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color backgroundColor;
+  final Color iconBackgroundColor;
+  final Color iconColor;
+  final VoidCallback onTap;
+  final bool isLocked;
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: const Icon(Icons.collections_outlined, size: 18),
-      label: const Text('Batch Export Pro'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white70,
-        side: const BorderSide(color: Colors.white24),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            height: 1.25,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                      if (isLocked) ...[
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.lock_outline,
+                          color: Color(0xFFA1A1A1),
+                          size: 18,
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFFA1A1A1),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.25,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isLocked) ...[
+              const SizedBox(width: 12),
+              const _ProPill(),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProPill extends StatelessWidget {
+  const _ProPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF272248),
+        border: Border.all(color: const Color(0xFF4F46E5)),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: const Text(
+        'PRO',
+        style: TextStyle(
+          color: Color(0xFF8EA0FF),
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          height: 1,
+          letterSpacing: 2,
+        ),
       ),
     );
   }
