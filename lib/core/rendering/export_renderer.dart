@@ -33,59 +33,71 @@ abstract final class ExportRenderer {
     final frame = await codec.getNextFrame();
     final fullImage = frame.image;
 
-    // 2. Load watermark for free tier.
-    final ui.Image? watermark = isPro ? null : await WatermarkLoader.load();
+    try {
+      // 2. Load watermark for free tier.
+      final ui.Image? watermark = isPro ? null : await WatermarkLoader.load();
 
-    // 3. Load camera logo if enabled.
-    final ui.Image? cameraLogo = config.showCameraLogo
-        ? await BrandLogoLoader.load(exif.cameraMake, size: 256)
-        : null;
+      // 3. Load camera logo if enabled.
+      final ui.Image? cameraLogo = config.showCameraLogo
+          ? await BrandLogoLoader.load(exif.cameraMake, size: 256)
+          : null;
 
-    // 4. Create painter at full resolution.
-    final painter = FramePainterFactory.create(
-      styleId: styleId,
-      image: fullImage,
-      exif: exif,
-      config: config,
-      watermark: watermark,
-      cameraLogo: cameraLogo,
-    );
-
-    final totalSize = painter.calculateTotalSize(painter.imageSize);
-
-    // 5. Record to picture.
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    painter.paint(canvas, totalSize);
-    final picture = recorder.endRecording();
-
-    // 6. Rasterize.
-    final outputImage = await picture.toImage(
-      totalSize.width.toInt(),
-      totalSize.height.toInt(),
-    );
-
-    // 7. Encode.
-    if (settings.format == ExportFormat.png) {
-      final byteData = await outputImage.toByteData(
-        format: ui.ImageByteFormat.png,
+      // 4. Create painter at full resolution.
+      final painter = FramePainterFactory.create(
+        styleId: styleId,
+        image: fullImage,
+        exif: exif,
+        config: config,
+        watermark: watermark,
+        cameraLogo: cameraLogo,
       );
-      return byteData!.buffer.asUint8List();
-    }
 
-    // JPEG: encode on a background isolate to avoid
-    // blocking the UI thread during heavy pixel work.
-    final byteData = await outputImage.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
-    return Isolate.run(
-      () => _encodeJpeg(
-        byteData!.buffer.asUint8List(),
-        totalSize.width.toInt(),
-        totalSize.height.toInt(),
-        settings.jpegQuality,
-      ),
-    );
+      final totalSize = painter.calculateTotalSize(painter.imageSize);
+
+      // 5. Record to picture.
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      painter.paint(canvas, totalSize);
+      final picture = recorder.endRecording();
+
+      try {
+        // 6. Rasterize.
+        final outputImage = await picture.toImage(
+          totalSize.width.toInt(),
+          totalSize.height.toInt(),
+        );
+
+        try {
+          // 7. Encode.
+          if (settings.format == ExportFormat.png) {
+            final byteData = await outputImage.toByteData(
+              format: ui.ImageByteFormat.png,
+            );
+            return byteData!.buffer.asUint8List();
+          }
+
+          // JPEG: encode on a background isolate to avoid
+          // blocking the UI thread during heavy pixel work.
+          final byteData = await outputImage.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          );
+          return Isolate.run(
+            () => _encodeJpeg(
+              byteData!.buffer.asUint8List(),
+              totalSize.width.toInt(),
+              totalSize.height.toInt(),
+              settings.jpegQuality,
+            ),
+          );
+        } finally {
+          outputImage.dispose();
+        }
+      } finally {
+        picture.dispose();
+      }
+    } finally {
+      fullImage.dispose();
+    }
   }
 
   static Uint8List _encodeJpeg(

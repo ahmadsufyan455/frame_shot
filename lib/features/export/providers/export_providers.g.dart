@@ -60,3 +60,56 @@ abstract class _$ExportNotifier extends $Notifier<ExportState> {
     element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(BatchExportNotifier)
+final batchExportProvider = BatchExportNotifierProvider._();
+
+final class BatchExportNotifierProvider
+    extends $NotifierProvider<BatchExportNotifier, BatchExportState> {
+  BatchExportNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'batchExportProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$batchExportNotifierHash();
+
+  @$internal
+  @override
+  BatchExportNotifier create() => BatchExportNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BatchExportState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BatchExportState>(value),
+    );
+  }
+}
+
+String _$batchExportNotifierHash() =>
+    r'c46fa4f73acd4c62609921140341569241b604f4';
+
+abstract class _$BatchExportNotifier extends $Notifier<BatchExportState> {
+  BatchExportState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<BatchExportState, BatchExportState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<BatchExportState, BatchExportState>,
+              BatchExportState,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

@@ -32,4 +32,5 @@ abstract final class DurationConstants {
 abstract final class AppLimits {
   static const int maxPresets = 20;
   static const int maxFieldOverrideLength = 100;
+  static const int maxBatchExport = 20;
 }

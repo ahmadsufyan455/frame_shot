@@ -28,6 +28,16 @@ class SelectedImage extends _$SelectedImage {
   void clear() => state = null;
 }
 
+@Riverpod(keepAlive: true)
+class SelectedBatchImages extends _$SelectedBatchImages {
+  @override
+  List<ImageFile> build() => const [];
+
+  void set(List<ImageFile> images) => state = images;
+
+  void clear() => state = const [];
+}
+
 // -- TASK-063: exifExtractionProvider --
 
 @riverpod
@@ -40,9 +50,7 @@ class ExifExtraction extends _$ExifExtraction {
     final settings = ref.watch(settingsProvider);
 
     try {
-      var exif = await ExifService.extractFromFile(
-        image.path,
-      );
+      var exif = await ExifService.extractFromFile(image.path);
 
       if (!settings.locationEnabled) {
         return exif.stripLocation();
@@ -105,11 +113,7 @@ FrameRenderData frameRenderData(Ref ref) {
   final exif = ref.watch(editedExifProvider);
   final config = ref.watch(frameConfigProvider);
   final styleId = ref.watch(selectedStyleProvider);
-  return FrameRenderData(
-    exif: exif,
-    config: config,
-    styleId: styleId,
-  );
+  return FrameRenderData(exif: exif, config: config, styleId: styleId);
 }
 
 // -- TASK-068: previewImageProvider --
@@ -130,5 +134,3 @@ Future<ui.Image?> previewImage(Ref ref) async {
   final frame = await codec.getNextFrame();
   return frame.image;
 }
-
-

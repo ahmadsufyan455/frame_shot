@@ -16,6 +16,7 @@ class PreviewScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exifAsync = ref.watch(exifExtractionProvider);
+    final batchCount = ref.watch(selectedBatchImagesProvider).length;
     final isEmpty =
         exifAsync.whenOrNull(data: (d) => d?.isEmpty ?? true) ?? false;
 
@@ -68,6 +69,20 @@ class PreviewScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          if (batchCount > 1)
+            Container(
+              width: double.infinity,
+              color: const Color(0xFF111111),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Text(
+                'Batch mode: $batchCount photos selected',
+                style: const TextStyle(
+                  color: Color(0xFFA1A1A1),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           if (isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
