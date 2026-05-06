@@ -61,6 +61,59 @@ abstract class _$SelectedImage extends $Notifier<ImageFile?> {
   }
 }
 
+@ProviderFor(SelectedBatchImages)
+final selectedBatchImagesProvider = SelectedBatchImagesProvider._();
+
+final class SelectedBatchImagesProvider
+    extends $NotifierProvider<SelectedBatchImages, List<ImageFile>> {
+  SelectedBatchImagesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedBatchImagesProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedBatchImagesHash();
+
+  @$internal
+  @override
+  SelectedBatchImages create() => SelectedBatchImages();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<ImageFile> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<ImageFile>>(value),
+    );
+  }
+}
+
+String _$selectedBatchImagesHash() =>
+    r'e6d3064d09fa2810f1417ccb601ee50e3e471e40';
+
+abstract class _$SelectedBatchImages extends $Notifier<List<ImageFile>> {
+  List<ImageFile> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<List<ImageFile>, List<ImageFile>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<ImageFile>, List<ImageFile>>,
+              List<ImageFile>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(ExifExtraction)
 final exifExtractionProvider = ExifExtractionProvider._();
 

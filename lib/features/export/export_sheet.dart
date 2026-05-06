@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/models/export_settings.dart';
+import '../preview/providers/preview_providers.dart';
 import '../settings/providers/settings_providers.dart';
 import 'providers/export_providers.dart';
 import 'widgets/saved_to_gallery_toast.dart';
@@ -36,14 +37,39 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final isPro = ref.watch(proStatusProvider).value ?? false;
     final exportState = ref.watch(exportProvider);
+    final batchImages = ref.watch(selectedBatchImagesProvider);
+    final isBatchMode = batchImages.length > 1;
+    final batchState = ref.watch(batchExportProvider);
 
     ref.listen<ExportState>(exportProvider, (prev, next) {
+      if (isBatchMode) return;
       if (next.error != null) {
         _showErrorSnackBar(next.error!);
       }
       if (next.status == ExportStatus.done && next.savedPath != null) {
         Navigator.of(context).pop();
         showSavedToGalleryToast(context);
+      }
+    });
+
+    ref.listen<BatchExportState>(batchExportProvider, (prev, next) {
+      if (!isBatchMode) return;
+      if (next.status == BatchExportStatus.done) {
+        Navigator.of(context).pop();
+        if (next.failed == 0) {
+          showSavedToGalleryToast(context);
+          return;
+        }
+        final success = next.completed;
+        final failed = next.failed;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Batch export finished: $success saved, $failed failed',
+            ),
+            backgroundColor: const Color(0xFFB45309),
+          ),
+        );
       }
     });
 
@@ -78,12 +104,33 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
               context.pushNamed('paywall');
             },
           ),
+          if (isBatchMode) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Using current style and visual settings for '
+              '${batchImages.length} photos.',
+              style: const TextStyle(
+                color: Color(0xFF737373),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
           _ActionButtons(
             status: exportState.status,
+            batchStatus: batchState.status,
             lastAction: _lastAction,
+            isBatchMode: isBatchMode,
+            batchCount: batchImages.length,
             onSave: () {
               _lastAction = _Action.save;
+              if (isBatchMode) {
+                ref
+                    .read(batchExportProvider.notifier)
+                    .saveBatchToGallery(_settings);
+                return;
+              }
               ref.read(exportProvider.notifier).saveToGallery(_settings);
             },
             onShare: () {
@@ -350,21 +397,45 @@ class _ResolutionIndicator extends StatelessWidget {
 class _ActionButtons extends StatelessWidget {
   const _ActionButtons({
     required this.status,
+    required this.batchStatus,
     required this.lastAction,
+    required this.isBatchMode,
+    required this.batchCount,
     required this.onSave,
     required this.onShare,
   });
 
   final ExportStatus status;
+  final BatchExportStatus batchStatus;
   final _Action lastAction;
+  final bool isBatchMode;
+  final int batchCount;
   final VoidCallback onSave;
   final VoidCallback onShare;
 
   bool get _isLoading =>
       status != ExportStatus.idle && status != ExportStatus.done;
 
+  bool get _isBatchLoading =>
+      batchStatus != BatchExportStatus.idle &&
+      batchStatus != BatchExportStatus.done;
+
   @override
   Widget build(BuildContext context) {
+    if (isBatchMode) {
+      return SizedBox(
+        width: double.infinity,
+        child: _ActionButton(
+          label: 'Save $batchCount Photos',
+          icon: Icons.save_alt_outlined,
+          isPrimary: true,
+          isLoading: _isBatchLoading,
+          isDisabled: _isBatchLoading,
+          onTap: onSave,
+        ),
+      );
+    }
+
     final saveLoading =
         _isLoading &&
         (status == ExportStatus.saving ||

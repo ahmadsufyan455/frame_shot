@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../app/router.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/models/frame_style.dart';
 import '../../core/models/image_file.dart';
 import '../customize/providers/customize_providers.dart';
@@ -43,6 +45,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final file = File(xFile.path);
     final stat = await file.stat();
 
+    ref.read(selectedBatchImagesProvider.notifier).clear();
+
     ref
         .read(selectedImageProvider.notifier)
         .set(
@@ -50,6 +54,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
 
     // Reset style and config to defaults for each new import.
+    await ref
+        .read(settingsProvider.notifier)
+        .setLastStyleId(FrameStyleId.classic);
+    ref.invalidate(selectedStyleProvider);
+    ref.invalidate(frameConfigProvider);
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      await context.pushNamed('preview');
+    }
+  }
+
+  Future<void> _pickBatchImages() async {
+    final isPro = ref.read(proStatusProvider).value ?? false;
+    if (!isPro) {
+      if (mounted) {
+        await context.pushNamed('paywall', extra: PaywallTrigger.export);
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final picker = ImagePicker();
+    final xFiles = await picker.pickMultiImage(limit: AppLimits.maxBatchExport);
+
+    if (xFiles.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
+    final images = <ImageFile>[];
+    for (final xFile in xFiles) {
+      final file = File(xFile.path);
+      final stat = await file.stat();
+      images.add(
+        ImageFile(path: xFile.path, name: xFile.name, sizeBytes: stat.size),
+      );
+    }
+
+    ref.read(selectedBatchImagesProvider.notifier).set(images);
+    ref.read(selectedImageProvider.notifier).set(images.first);
+
     await ref
         .read(settingsProvider.notifier)
         .setLastStyleId(FrameStyleId.classic);
@@ -157,7 +212,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _buildTextContent(),
               const SizedBox(width: 100),
-              ImportButton(onTap: _pickImage, isLoading: _isLoading),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ImportButton(onTap: _pickImage, isLoading: _isLoading),
+                  const SizedBox(height: 18),
+                  _BatchButton(onTap: _isLoading ? null : _pickBatchImages),
+                ],
+              ),
             ],
           ),
         ),
@@ -177,12 +239,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _buildTextContent(),
                 const SizedBox(height: 64),
                 ImportButton(onTap: _pickImage, isLoading: _isLoading),
+                const SizedBox(height: 18),
+                _BatchButton(onTap: _isLoading ? null : _pickBatchImages),
               ],
             ),
           ),
         ),
         _buildTopRightActions(),
       ],
+    );
+  }
+}
+
+class _BatchButton extends StatelessWidget {
+  const _BatchButton({required this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.collections_outlined, size: 18),
+      label: const Text('Batch Export Pro'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white70,
+        side: const BorderSide(color: Colors.white24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      ),
     );
   }
 }
