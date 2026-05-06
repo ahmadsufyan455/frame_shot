@@ -135,6 +135,7 @@ class BatchExportState {
     this.total = 0,
     this.completed = 0,
     this.failed = 0,
+    this.currentIndex = 0,
     this.currentName,
     this.errors = const [],
   });
@@ -143,6 +144,7 @@ class BatchExportState {
   final int total;
   final int completed;
   final int failed;
+  final int currentIndex;
   final String? currentName;
   final List<String> errors;
 
@@ -151,6 +153,7 @@ class BatchExportState {
     int? total,
     int? completed,
     int? failed,
+    int? currentIndex,
     String? currentName,
     List<String>? errors,
   }) {
@@ -159,6 +162,7 @@ class BatchExportState {
       total: total ?? this.total,
       completed: completed ?? this.completed,
       failed: failed ?? this.failed,
+      currentIndex: currentIndex ?? this.currentIndex,
       currentName: currentName ?? this.currentName,
       errors: errors ?? this.errors,
     );
@@ -218,6 +222,11 @@ class BatchExportNotifier extends _$BatchExportNotifier {
   BatchExportState build() => const BatchExportState();
 
   Future<void> saveBatchToGallery(ExportSettings settings) async {
+    if (state.status != BatchExportStatus.idle &&
+        state.status != BatchExportStatus.done) {
+      return;
+    }
+
     final images = ref.read(selectedBatchImagesProvider);
     if (images.length < 2) return;
 
@@ -232,6 +241,7 @@ class BatchExportNotifier extends _$BatchExportNotifier {
     state = BatchExportState(
       status: BatchExportStatus.rendering,
       total: images.length,
+      currentIndex: 0,
     );
 
     var completed = 0;
@@ -242,6 +252,7 @@ class BatchExportNotifier extends _$BatchExportNotifier {
       final image = images[i];
       state = state.copyWith(
         status: BatchExportStatus.rendering,
+        currentIndex: i + 1,
         currentName: image.name,
         completed: completed,
         failed: failed,
@@ -276,7 +287,13 @@ class BatchExportNotifier extends _$BatchExportNotifier {
       );
     }
 
-    state = state.copyWith(status: BatchExportStatus.done, currentName: null);
+    state = BatchExportState(
+      status: BatchExportStatus.done,
+      total: images.length,
+      completed: completed,
+      failed: failed,
+      errors: List.unmodifiable(errors),
+    );
   }
 
   void reset() => state = const BatchExportState();

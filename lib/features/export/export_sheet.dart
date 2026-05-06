@@ -33,6 +33,12 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   _Action _lastAction = _Action.unknown;
 
   @override
+  void dispose() {
+    ref.read(batchExportProvider.notifier).reset();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final isPro = ref.watch(proStatusProvider).value ?? false;
@@ -106,15 +112,7 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
           ),
           if (isBatchMode) ...[
             const SizedBox(height: 12),
-            Text(
-              'Using current style and visual settings for '
-              '${batchImages.length} photos.',
-              style: const TextStyle(
-                color: Color(0xFF737373),
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            _BatchProgressInfo(state: batchState, total: batchImages.length),
           ],
           const SizedBox(height: 28),
           _ActionButtons(
@@ -148,6 +146,62 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       SnackBar(
         content: Text('Export failed: $error'),
         backgroundColor: Colors.red.shade700,
+      ),
+    );
+  }
+}
+
+class _BatchProgressInfo extends StatelessWidget {
+  const _BatchProgressInfo({required this.state, required this.total});
+
+  final BatchExportState state;
+  final int total;
+
+  bool get _isRunning =>
+      state.status != BatchExportStatus.idle &&
+      state.status != BatchExportStatus.done;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = _isRunning
+        ? 'Exporting ${state.currentIndex}/$total'
+        : 'Using current style and visual settings for $total photos.';
+    final currentName = state.currentName;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF262626),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFFE5E5E5),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
+            ),
+          ),
+          if (_isRunning && currentName != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              currentName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFFA1A1A1),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

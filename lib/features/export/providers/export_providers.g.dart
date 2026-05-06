@@ -94,7 +94,7 @@ final class BatchExportNotifierProvider
 }
 
 String _$batchExportNotifierHash() =>
-    r'5589c211b37902d7aae1ce3988784e818bd3465c';
+    r'c46fa4f73acd4c62609921140341569241b604f4';
 
 abstract class _$BatchExportNotifier extends $Notifier<BatchExportState> {
   BatchExportState build();
